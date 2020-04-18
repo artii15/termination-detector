@@ -21,8 +21,13 @@ func NewProcessCreator(dynamoAPI dynamodbiface.DynamoDBAPI, processesTableName s
 	}
 }
 
-func (creator *ProcessCreator) Create(proc process.Process) (process.CreationResult, error) {
-	_, err := creator.dynamoAPI.PutItem(&dynamodb.PutItemInput{
+func (creator *ProcessCreator) Create(proc process.Process) (process.CreationStatus, error) {
+	dynamoItem, err := newStoredProcess(proc).dynamoItem()
+	if err != nil {
+		return "", err
+	}
+
+	putItemInput := &dynamodb.PutItemInput{
 		ConditionExpression: aws.String("attribute_not_exists(#id) or #state = :stateCreated"),
 		ExpressionAttributeNames: map[string]*string{
 			"#id":    aws.String("id"),
@@ -31,14 +36,23 @@ func (creator *ProcessCreator) Create(proc process.Process) (process.CreationRes
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":stateCreated": {S: aws.String(string(process.StateCreated))},
 		},
-		Item:      newStoredProcess(proc).dynamoItem(),
-		TableName: &creator.processesTableName,
-	})
+		Item:         dynamoItem,
+		ReturnValues: aws.String(dynamodb.ReturnValueAllOld),
+		TableName:    &creator.processesTableName,
+	}
+	return determineProcessCreatingStatus(creator.dynamoAPI.PutItem(putItemInput))
+}
+
+func determineProcessCreatingStatus(putItemResult *dynamodb.PutItemOutput, err error) (process.CreationStatus, error) {
 	if err != nil {
 		if awsErr, isAWSErr := err.(awserr.Error); isAWSErr && awsErr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
-			return process.CreationResult{AlreadyExistsInConflictingState: true}, nil
+			return process.CreationStatusConflict, nil
 		}
-		return process.CreationResult{}, errors.Wrap(err, "failed to put process into DynamoDB table")
+		return "", errors.Wrap(err, "failed to put process into DynamoDB table")
 	}
-	return process.CreationResult{AlreadyExistsInConflictingState: false}, nil
+
+	if len(putItemResult.Attributes) == 0 {
+		return process.CreationStatusNew, nil
+	}
+	return process.CreationStatusOverridden, nil
 }

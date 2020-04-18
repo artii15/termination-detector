@@ -13,12 +13,12 @@ type storedProcess struct {
 	StateDescription *string       `json:"state_description"`
 }
 
-func (proc storedProcess) dynamoItem() map[string]*dynamodb.AttributeValue {
+func (proc storedProcess) dynamoItem() (map[string]*dynamodb.AttributeValue, error) {
 	dynamoItem, err := dynamodbattribute.MarshalMap(proc)
 	if err != nil {
-		panic(errors.Wrapf(err, "failed to marshal stored process: %+v", proc))
+		return nil, errors.Wrapf(err, "failed to marshal stored process: %+v", proc)
 	}
-	return dynamoItem
+	return dynamoItem, nil
 }
 
 func newStoredProcess(proc process.Process) storedProcess {

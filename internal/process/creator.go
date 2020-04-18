@@ -1,9 +1,13 @@
 package process
 
-type CreationResult struct {
-	AlreadyExistsInConflictingState bool
-}
+type CreationStatus string
+
+const (
+	CreationStatusNew        CreationStatus = "NEW"
+	CreationStatusOverridden CreationStatus = "OVERRIDDEN"
+	CreationStatusConflict   CreationStatus = "CONFLICT"
+)
 
 type Creator interface {
-	Create(process Process) (CreationResult, error)
+	Create(process Process) (CreationStatus, error)
 }
