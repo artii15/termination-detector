@@ -9,6 +9,7 @@ import (
 
 type ResourcePath string
 type HTTPMethod string
+type RequestsHandlersMap map[ResourcePath]map[HTTPMethod]RequestHandler
 
 const (
 	ResourcePathTask ResourcePath = "/processes/{process-id}/tasks/{task-id}"
@@ -21,10 +22,10 @@ type RequestHandler interface {
 }
 
 type Router struct {
-	requestsHandlers map[ResourcePath]map[HTTPMethod]RequestHandler
+	requestsHandlers RequestsHandlersMap
 }
 
-func CreateRouter(requestsHandlers map[ResourcePath]map[HTTPMethod]RequestHandler) *Router {
+func NewRouter(requestsHandlers RequestsHandlersMap) *Router {
 	return &Router{
 		requestsHandlers: requestsHandlers,
 	}

@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	router := api.CreateRouter(map[api.ResourcePath]map[api.HTTPMethod]api.RequestHandler{
+	router := api.NewRouter(map[api.ResourcePath]map[api.HTTPMethod]api.RequestHandler{
 		api.ResourcePathTask: {
 			api.HTTPMethodGet: api.CreateGetTaskRequestHandler(),
 		},
