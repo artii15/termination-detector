@@ -1,14 +1,14 @@
 package handlers_test
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 	"time"
 
-	"github.com/nordcloud/termination-detector/internal/api/handlers"
-
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/nordcloud/termination-detector/internal/api"
+	"github.com/nordcloud/termination-detector/internal/api/handlers"
 	"github.com/nordcloud/termination-detector/internal/task"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -127,6 +127,16 @@ func TestPutTaskRequestHandler_HandleRequest_UnknownRegistrationResult(t *testin
 
 	handlerAndMocks.taskRegistererMock.On("Register", handlerAndMocks.registrationData).
 		Return(task.RegistrationResult("unknown"), nil)
+
+	_, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
+	assert.Error(t, err)
+}
+
+func TestPutTaskRequestHandler_HandleRequest_RegistrationFailure(t *testing.T) {
+	handlerAndMocks := newPutTaskReqHandlerWithMocks()
+
+	handlerAndMocks.taskRegistererMock.On("Register", handlerAndMocks.registrationData).
+		Return(task.RegistrationResult(""), errors.New("error"))
 
 	_, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
 	assert.Error(t, err)
