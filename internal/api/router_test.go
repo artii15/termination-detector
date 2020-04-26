@@ -62,11 +62,14 @@ func TestRouter_Route_UnknownResource(t *testing.T) {
 
 	request := events.APIGatewayProxyRequest{
 		Resource:   "unknown",
-		HTTPMethod: "POST",
+		HTTPMethod: http.MethodGet,
 	}
 	expectedResponse := events.APIGatewayProxyResponse{
 		StatusCode: http.StatusNotFound,
 		Body:       http.StatusText(http.StatusNotFound),
+		Headers: map[string]string{
+			api.ContentTypeHeaderName: api.ContentTypeTextPlain,
+		},
 	}
 
 	response := routerAndMocks.router.Route(request)
@@ -83,6 +86,9 @@ func TestRouter_Route_UnknownMethod(t *testing.T) {
 	expectedResponse := events.APIGatewayProxyResponse{
 		StatusCode: http.StatusNotFound,
 		Body:       http.StatusText(http.StatusNotFound),
+		Headers: map[string]string{
+			api.ContentTypeHeaderName: api.ContentTypeTextPlain,
+		},
 	}
 
 	response := routerAndMocks.router.Route(request)
@@ -102,6 +108,9 @@ func TestRouter_Route_HandlerError(t *testing.T) {
 	expectedResponse := events.APIGatewayProxyResponse{
 		StatusCode: http.StatusInternalServerError,
 		Body:       http.StatusText(http.StatusInternalServerError),
+		Headers: map[string]string{
+			api.ContentTypeHeaderName: api.ContentTypeTextPlain,
+		},
 	}
 	response := routerAndMocks.router.Route(request)
 	assert.Equal(t, expectedResponse, response)

@@ -6,10 +6,6 @@ import (
 )
 
 func main() {
-	router := api.NewRouter(map[api.ResourcePath]map[api.HTTPMethod]api.RequestHandler{
-		api.ResourcePathTask: {
-			api.HTTPMethodGet: api.CreateGetTaskRequestHandler(),
-		},
-	})
+	router := api.NewRouter(map[api.ResourcePath]map[api.HTTPMethod]api.RequestHandler{})
 	lambda.Start(router.Route)
 }
