@@ -1,10 +1,10 @@
 package api
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
+	log "github.com/sirupsen/logrus"
 )
 
 type ResourcePath string
@@ -43,7 +43,7 @@ func (router *Router) Route(request events.APIGatewayProxyRequest) events.APIGat
 
 	response, err := requestHandler.HandleRequest(request)
 	if err != nil {
-		log.Printf("failed to handle request: %s", err.Error())
+		log.WithError(err).WithField("request", request).Error("failed to handle request")
 		return createDefaultResponseWithStatus(http.StatusInternalServerError)
 	}
 	return response
