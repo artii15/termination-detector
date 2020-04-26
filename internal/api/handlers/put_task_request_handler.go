@@ -9,7 +9,7 @@ import (
 	"github.com/nordcloud/termination-detector/internal/task"
 )
 
-const duplicatedLastTaskMessage = "other task of the same process is marked as last"
+const DuplicatedLastTaskMessage = "other task of the same process is marked as last"
 
 type PutTaskRequestHandler struct {
 	registerer task.Registerer
@@ -63,7 +63,7 @@ func mapTaskRegistrationStatusToResponse(request events.APIGatewayProxyRequest,
 		return events.APIGatewayProxyResponse{
 			StatusCode: http.StatusConflict,
 			Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeTextPlain},
-			Body:       duplicatedLastTaskMessage,
+			Body:       DuplicatedLastTaskMessage,
 		}, nil
 	default:
 		return events.APIGatewayProxyResponse{}, fmt.Errorf("unknown registration result: %s", registrationResult)
