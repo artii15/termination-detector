@@ -23,6 +23,16 @@ type TaskRegisterer struct {
 	tasksStoringDuration time.Duration
 }
 
+func NewTaskRegisterer(dynamoAPI dynamodbiface.DynamoDBAPI, tasksTableName string,
+	currentDateGetter currentDateGetter, tasksStoringDuration time.Duration) *TaskRegisterer {
+	return &TaskRegisterer{
+		dynamoAPI:            dynamoAPI,
+		tasksTableName:       tasksTableName,
+		currentDateGetter:    currentDateGetter,
+		tasksStoringDuration: tasksStoringDuration,
+	}
+}
+
 func (registerer *TaskRegisterer) Register(registrationData internalTask.RegistrationData) (internalTask.RegistrationResult, error) {
 	putTaskOutput, err := registerer.putTask(registrationData)
 	if err != nil {
