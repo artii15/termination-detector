@@ -1,1 +1,10 @@
 .idea
+*.js
+*.d.ts
+node_modules
+
+.cdk.staging
+cdk.out
+
+.cache
+.build
