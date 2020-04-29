@@ -32,10 +32,8 @@ type putTaskReqHandlerWithMocks struct {
 
 func newPutTaskReqHandlerWithMocks() *putTaskReqHandlerWithMocks {
 	taskRegisterer := new(taskRegistererMock)
-	taskExpirationTime := time.Now().Add(time.Hour).UTC()
 	apiTask := api.Task{
-		ExpirationTime: &taskExpirationTime,
-		IsLastTask:     true,
+		ExpirationTime: time.Now().Add(time.Hour).UTC(),
 	}
 	taskID := "1"
 	processID := "2"
@@ -51,7 +49,6 @@ func newPutTaskReqHandlerWithMocks() *putTaskReqHandlerWithMocks {
 			ID:             taskID,
 			ProcessID:      processID,
 			ExpirationTime: apiTask.ExpirationTime,
-			IsLastTask:     apiTask.IsLastTask,
 		},
 		taskRegistererMock: taskRegisterer,
 		handler:            handlers.NewPutTaskRequestHandler(taskRegisterer),
@@ -109,7 +106,7 @@ func TestPutTaskRequestHandler_HandleRequest_DuplicatedLastTask(t *testing.T) {
 	handlerAndMocks := newPutTaskReqHandlerWithMocks()
 
 	handlerAndMocks.taskRegistererMock.On("Register", handlerAndMocks.registrationData).
-		Return(task.RegistrationResultDuplicateLastTask, nil)
+		Return(task.RegistrationResultErrorTerminalState, nil)
 
 	response, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
 	assert.NoError(t, err)
@@ -118,7 +115,7 @@ func TestPutTaskRequestHandler_HandleRequest_DuplicatedLastTask(t *testing.T) {
 		Headers: map[string]string{
 			api.ContentTypeHeaderName: api.ContentTypeTextPlain,
 		},
-		Body: handlers.DuplicatedLastTaskMessage,
+		Body: handlers.TaskInTerminalStateErrorMessage,
 	}, response)
 }
 

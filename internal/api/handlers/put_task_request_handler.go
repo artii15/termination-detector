@@ -9,7 +9,7 @@ import (
 	"github.com/nordcloud/termination-detector/internal/task"
 )
 
-const DuplicatedLastTaskMessage = "other task of the same process is marked as last"
+const TaskInTerminalStateErrorMessage = "task is in terminal state and can not be updated"
 
 type PutTaskRequestHandler struct {
 	registerer task.Registerer
@@ -31,7 +31,6 @@ func (handler *PutTaskRequestHandler) HandleRequest(request events.APIGatewayPro
 		ID:             request.PathParameters[api.TaskIDPathParameter],
 		ProcessID:      request.PathParameters[api.ProcessIDPathParameter],
 		ExpirationTime: unmarshalledTask.ExpirationTime,
-		IsLastTask:     unmarshalledTask.IsLastTask,
 	})
 	if err != nil {
 		return events.APIGatewayProxyResponse{}, err
@@ -59,11 +58,11 @@ func mapTaskRegistrationStatusToResponse(request events.APIGatewayProxyRequest,
 		return events.APIGatewayProxyResponse{
 			StatusCode: http.StatusNoContent,
 		}, nil
-	case task.RegistrationResultDuplicateLastTask:
+	case task.RegistrationResultErrorTerminalState:
 		return events.APIGatewayProxyResponse{
 			StatusCode: http.StatusConflict,
 			Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeTextPlain},
-			Body:       DuplicatedLastTaskMessage,
+			Body:       TaskInTerminalStateErrorMessage,
 		}, nil
 	default:
 		return events.APIGatewayProxyResponse{}, fmt.Errorf("unknown registration result: %s", registrationResult)

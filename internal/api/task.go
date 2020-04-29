@@ -12,8 +12,7 @@ const (
 )
 
 type Task struct {
-	ExpirationTime *time.Time `json:"expirationTime"`
-	IsLastTask     bool       `json:"isLastTask"`
+	ExpirationTime time.Time `json:"expirationTime"`
 }
 
 func (task *Task) JSON() string {
