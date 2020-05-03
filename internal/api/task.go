@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	TaskIDPathParameter = "task-id"
+	TaskIDPathParameter = "task_id"
 )
 
 type Task struct {

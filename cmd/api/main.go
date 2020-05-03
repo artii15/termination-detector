@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -15,6 +16,14 @@ const (
 	tasksTableNameEnvVar       = "TASKS_TABLE_NAME"
 	tasksStoringDurationEnvVar = "TASKS_STORING_DURATION"
 )
+
+type apiGatewayEventHandler struct {
+	router *api.Router
+}
+
+func (handler *apiGatewayEventHandler) handle(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	return handler.router.Route(request), nil
+}
 
 func main() {
 	tasksTableName := env.MustRead(tasksTableNameEnvVar)
@@ -33,5 +42,6 @@ func main() {
 			api.HTTPMethodPut: putTaskRequestHandler,
 		},
 	})
-	lambda.Start(router.Route)
+	handler := apiGatewayEventHandler{router: router}
+	lambda.Start(handler.handle)
 }

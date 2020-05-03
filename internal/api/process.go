@@ -1,5 +1,5 @@
 package api
 
 const (
-	ProcessIDPathParameter = "process-id"
+	ProcessIDPathParameter = "process_id"
 )

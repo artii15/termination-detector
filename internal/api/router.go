@@ -12,7 +12,7 @@ type HTTPMethod string
 type RequestsHandlersMap map[ResourcePath]map[HTTPMethod]RequestHandler
 
 const (
-	ResourcePathTask ResourcePath = "/processes/{process-id}/tasks/{task-id}"
+	ResourcePathTask ResourcePath = "/processes/{process_id}/tasks/{task_id}"
 
 	HTTPMethodGet HTTPMethod = http.MethodGet
 	HTTPMethodPut HTTPMethod = http.MethodPut
