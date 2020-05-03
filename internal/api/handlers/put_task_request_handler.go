@@ -28,8 +28,10 @@ func (handler *PutTaskRequestHandler) HandleRequest(request events.APIGatewayPro
 	}
 
 	registrationResult, err := handler.registerer.Register(task.RegistrationData{
-		ID:             request.PathParameters[api.TaskIDPathParameter],
-		ProcessID:      request.PathParameters[api.ProcessIDPathParameter],
+		ID: task.ID{
+			ProcessID: request.PathParameters[api.ProcessIDPathParameter],
+			TaskID:    request.PathParameters[api.TaskIDPathParameter],
+		},
 		ExpirationTime: unmarshalledTask.ExpirationTime,
 	})
 	if err != nil {

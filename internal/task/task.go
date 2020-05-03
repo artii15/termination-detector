@@ -10,17 +10,17 @@ const (
 	StateFinished State = "FINISHED"
 )
 
+type ID struct {
+	ProcessID string
+	TaskID    string
+}
+
+func (id ID) Equals(other ID) bool {
+	return id.ProcessID == other.ProcessID && id.TaskID == other.TaskID
+}
+
 type Task struct {
-	RegistrationData
-	State State
-}
-
-type RegistrationData struct {
-	ID             string
-	ProcessID      string
+	ID
+	State          State
 	ExpirationTime time.Time
-}
-
-func (data RegistrationData) Equals(other RegistrationData) bool {
-	return data.ID == other.ID && data.ProcessID == other.ProcessID && data.ExpirationTime == other.ExpirationTime
 }

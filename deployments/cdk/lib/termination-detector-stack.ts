@@ -10,7 +10,7 @@ export class TerminationDetectorStack extends cdk.Stack {
 
     const tasksTable = new dynamo.Table(this, 'tasks-table', {
       partitionKey: {name: 'process_id', type: dynamo.AttributeType.STRING},
-      sortKey: {name: 'id', type: dynamo.AttributeType.STRING},
+      sortKey: {name: 'task_id', type: dynamo.AttributeType.STRING},
       billingMode: dynamo.BillingMode.PAY_PER_REQUEST,
       timeToLiveAttribute: 'ttl'
     });

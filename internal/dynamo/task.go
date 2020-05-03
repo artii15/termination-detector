@@ -12,7 +12,7 @@ import (
 )
 
 type task struct {
-	ID              string             `json:"id"`
+	TaskID          string             `json:"task_id"`
 	ProcessID       string             `json:"process_id"`
 	ExpirationTime  time.Time          `json:"expiration_time"`
 	State           internalTask.State `json:"state"`
@@ -28,17 +28,16 @@ func (task task) dynamoItem() map[string]*dynamodb.AttributeValue {
 	return marshalled
 }
 
-func (task task) registrationData() internalTask.RegistrationData {
-	return internalTask.RegistrationData{
-		ID:             task.ID,
-		ProcessID:      task.ProcessID,
-		ExpirationTime: task.ExpirationTime,
+func (task task) ID() internalTask.ID {
+	return internalTask.ID{
+		TaskID:    task.TaskID,
+		ProcessID: task.ProcessID,
 	}
 }
 
 func newTask(toConvert internalTask.Task, ttl int64) task {
 	return task{
-		ID:              toConvert.ID,
+		TaskID:          toConvert.TaskID,
 		ProcessID:       toConvert.ProcessID,
 		ExpirationTime:  toConvert.ExpirationTime,
 		State:           toConvert.State,

@@ -46,8 +46,10 @@ func newPutTaskReqHandlerWithMocks() *putTaskReqHandlerWithMocks {
 			Body: apiTask.JSON(),
 		},
 		registrationData: task.RegistrationData{
-			ID:             taskID,
-			ProcessID:      processID,
+			ID: task.ID{
+				ProcessID: processID,
+				TaskID:    taskID,
+			},
 			ExpirationTime: apiTask.ExpirationTime,
 		},
 		taskRegistererMock: taskRegisterer,

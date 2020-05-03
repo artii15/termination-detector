@@ -45,7 +45,7 @@ func (registerer *TaskRegisterer) Register(registrationData internalTask.Registr
 		return internalTask.RegistrationResultCreated, nil
 	}
 	oldTask := readDynamoTask(putTaskOutput.Attributes)
-	if registrationData.Equals(oldTask.registrationData()) {
+	if registrationData.ID.Equals(oldTask.ID()) && registrationData.ExpirationTime.Equal(oldTask.ExpirationTime) {
 		return internalTask.RegistrationResultNotChanged, nil
 	}
 	return internalTask.RegistrationResultChanged, nil
@@ -54,8 +54,9 @@ func (registerer *TaskRegisterer) Register(registrationData internalTask.Registr
 func (registerer *TaskRegisterer) putTask(registrationData internalTask.RegistrationData) (*dynamodb.PutItemOutput, error) {
 	currentDate := registerer.currentDateGetter.GetCurrentDate()
 	taskToRegister := newTask(internalTask.Task{
-		RegistrationData: registrationData,
-		State:            internalTask.StateCreated,
+		ID:             registrationData.ID,
+		ExpirationTime: registrationData.ExpirationTime,
+		State:          internalTask.StateCreated,
 	}, calculateTTL(currentDate, registerer.tasksStoringDuration))
 
 	condExpr := "(attribute_not_exists(#process_id) and attribute_not_exists(#processing_state)) or (#state = :stateCreated and #expiration_time > :currentTime)"
