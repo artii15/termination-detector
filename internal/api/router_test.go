@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/aws/aws-lambda-go/events"
 	"github.com/nordcloud/termination-detector/internal/api"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -18,6 +17,11 @@ type requestHandlerMock struct {
 type routerWithMocks struct {
 	router         *api.Router
 	getTaskHandler *requestHandlerMock
+}
+
+func (handler *requestHandlerMock) HandleRequest(request api.Request) (api.Response, error) {
+	args := handler.Called(request)
+	return args.Get(0).(api.Response), args.Error(1)
 }
 
 func newRouterWithMocks() routerWithMocks {
@@ -35,19 +39,14 @@ func newRouterWithMocks() routerWithMocks {
 	}
 }
 
-func (handler *requestHandlerMock) HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	args := handler.Called(request)
-	return args.Get(0).(events.APIGatewayProxyResponse), args.Error(1)
-}
-
 func TestRouter_Route(t *testing.T) {
 	routerAndMocks := newRouterWithMocks()
 
-	request := events.APIGatewayProxyRequest{
-		Resource:   string(api.ResourcePathTask),
-		HTTPMethod: string(api.HTTPMethodGet),
+	request := api.Request{
+		ResourcePath: api.ResourcePathTask,
+		HTTPMethod:   api.HTTPMethodGet,
 	}
-	expectedResponse := events.APIGatewayProxyResponse{
+	expectedResponse := api.Response{
 		StatusCode: http.StatusOK,
 		Body:       http.StatusText(http.StatusOK),
 	}
@@ -60,11 +59,11 @@ func TestRouter_Route(t *testing.T) {
 func TestRouter_Route_UnknownResource(t *testing.T) {
 	routerAndMocks := newRouterWithMocks()
 
-	request := events.APIGatewayProxyRequest{
-		Resource:   "unknown",
-		HTTPMethod: http.MethodGet,
+	request := api.Request{
+		ResourcePath: "unknown",
+		HTTPMethod:   http.MethodGet,
 	}
-	expectedResponse := events.APIGatewayProxyResponse{
+	expectedResponse := api.Response{
 		StatusCode: http.StatusNotFound,
 		Body:       http.StatusText(http.StatusNotFound),
 		Headers: map[string]string{
@@ -79,11 +78,11 @@ func TestRouter_Route_UnknownResource(t *testing.T) {
 func TestRouter_Route_UnknownMethod(t *testing.T) {
 	routerAndMocks := newRouterWithMocks()
 
-	request := events.APIGatewayProxyRequest{
-		Resource:   string(api.ResourcePathTask),
-		HTTPMethod: "PATCH",
+	request := api.Request{
+		ResourcePath: api.ResourcePathTask,
+		HTTPMethod:   "PATCH",
 	}
-	expectedResponse := events.APIGatewayProxyResponse{
+	expectedResponse := api.Response{
 		StatusCode: http.StatusNotFound,
 		Body:       http.StatusText(http.StatusNotFound),
 		Headers: map[string]string{
@@ -98,14 +97,14 @@ func TestRouter_Route_UnknownMethod(t *testing.T) {
 func TestRouter_Route_HandlerError(t *testing.T) {
 	routerAndMocks := newRouterWithMocks()
 
-	request := events.APIGatewayProxyRequest{
-		Resource:   string(api.ResourcePathTask),
-		HTTPMethod: string(api.HTTPMethodGet),
+	request := api.Request{
+		ResourcePath: api.ResourcePathTask,
+		HTTPMethod:   api.HTTPMethodGet,
 	}
 	expectedError := errors.New("error")
-	routerAndMocks.getTaskHandler.On("HandleRequest", request).Return(events.APIGatewayProxyResponse{}, expectedError)
+	routerAndMocks.getTaskHandler.On("HandleRequest", request).Return(api.Response{}, expectedError)
 
-	expectedResponse := events.APIGatewayProxyResponse{
+	expectedResponse := api.Response{
 		StatusCode: http.StatusInternalServerError,
 		Body:       http.StatusText(http.StatusInternalServerError),
 		Headers: map[string]string{

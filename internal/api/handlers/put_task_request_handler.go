@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/aws/aws-lambda-go/events"
 	"github.com/nordcloud/termination-detector/internal/api"
 	"github.com/nordcloud/termination-detector/internal/task"
 )
@@ -21,10 +20,10 @@ func NewPutTaskRequestHandler(registerer task.Registerer) *PutTaskRequestHandler
 	}
 }
 
-func (handler *PutTaskRequestHandler) HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func (handler *PutTaskRequestHandler) HandleRequest(request api.Request) (api.Response, error) {
 	unmarshalledTask, err := api.UnmarshalTask(request.Body)
 	if err != nil {
-		return events.APIGatewayProxyResponse{}, err
+		return api.Response{}, err
 	}
 
 	registrationResult, err := handler.registerer.Register(task.RegistrationData{
@@ -35,38 +34,38 @@ func (handler *PutTaskRequestHandler) HandleRequest(request events.APIGatewayPro
 		ExpirationTime: unmarshalledTask.ExpirationTime,
 	})
 	if err != nil {
-		return events.APIGatewayProxyResponse{}, err
+		return api.Response{}, err
 	}
 
 	return mapTaskRegistrationStatusToResponse(request, registrationResult)
 }
 
-func mapTaskRegistrationStatusToResponse(request events.APIGatewayProxyRequest,
-	registrationResult task.RegistrationResult) (events.APIGatewayProxyResponse, error) {
+func mapTaskRegistrationStatusToResponse(request api.Request,
+	registrationResult task.RegistrationResult) (api.Response, error) {
 	switch registrationResult {
 	case task.RegistrationResultCreated:
-		return events.APIGatewayProxyResponse{
+		return api.Response{
 			StatusCode: http.StatusCreated,
 			Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeApplicationJSON},
 			Body:       request.Body,
 		}, nil
 	case task.RegistrationResultChanged:
-		return events.APIGatewayProxyResponse{
+		return api.Response{
 			StatusCode: http.StatusOK,
 			Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeApplicationJSON},
 			Body:       request.Body,
 		}, nil
 	case task.RegistrationResultNotChanged:
-		return events.APIGatewayProxyResponse{
+		return api.Response{
 			StatusCode: http.StatusNoContent,
 		}, nil
 	case task.RegistrationResultErrorTerminalState:
-		return events.APIGatewayProxyResponse{
+		return api.Response{
 			StatusCode: http.StatusConflict,
 			Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeTextPlain},
 			Body:       TaskInTerminalStateErrorMessage,
 		}, nil
 	default:
-		return events.APIGatewayProxyResponse{}, fmt.Errorf("unknown registration result: %s", registrationResult)
+		return api.Response{}, fmt.Errorf("unknown registration result: %s", registrationResult)
 	}
 }

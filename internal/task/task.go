@@ -23,4 +23,5 @@ type Task struct {
 	ID
 	State          State
 	ExpirationTime time.Time
+	StateMessage   *string
 }

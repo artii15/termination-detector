@@ -22,7 +22,18 @@ type apiGatewayEventHandler struct {
 }
 
 func (handler *apiGatewayEventHandler) handle(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	return handler.router.Route(request), nil
+	routerRequest := api.Request{
+		HTTPMethod:     api.HTTPMethod(request.HTTPMethod),
+		ResourcePath:   api.ResourcePath(request.Resource),
+		Body:           request.Body,
+		PathParameters: request.PathParameters,
+	}
+	response := handler.router.Route(routerRequest)
+	return events.APIGatewayProxyResponse{
+		StatusCode: response.StatusCode,
+		Headers:    response.Headers,
+		Body:       response.Body,
+	}, nil
 }
 
 func main() {

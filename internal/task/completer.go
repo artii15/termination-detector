@@ -1,14 +1,9 @@
 package task
 
-type Completion struct {
+type CompleteRequest struct {
+	ID
 	State   State
 	Message *string
-}
-
-type CompleteRequest struct {
-	ProcessID string
-	TaskID    string
-	Completion
 }
 
 type Completer interface {

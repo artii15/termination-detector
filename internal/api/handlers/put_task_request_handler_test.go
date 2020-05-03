@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-lambda-go/events"
 	"github.com/nordcloud/termination-detector/internal/api"
 	"github.com/nordcloud/termination-detector/internal/api/handlers"
 	"github.com/nordcloud/termination-detector/internal/task"
@@ -24,7 +23,7 @@ func (registerer *taskRegistererMock) Register(registrationData task.Registratio
 }
 
 type putTaskReqHandlerWithMocks struct {
-	request            events.APIGatewayProxyRequest
+	request            api.Request
 	registrationData   task.RegistrationData
 	taskRegistererMock *taskRegistererMock
 	handler            *handlers.PutTaskRequestHandler
@@ -38,7 +37,7 @@ func newPutTaskReqHandlerWithMocks() *putTaskReqHandlerWithMocks {
 	taskID := "1"
 	processID := "2"
 	return &putTaskReqHandlerWithMocks{
-		request: events.APIGatewayProxyRequest{
+		request: api.Request{
 			PathParameters: map[string]string{
 				api.TaskIDPathParameter:    taskID,
 				api.ProcessIDPathParameter: processID,
@@ -65,7 +64,7 @@ func TestPutTaskRequestHandler_HandleRequest_TaskChanged(t *testing.T) {
 
 	response, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
 	assert.NoError(t, err)
-	assert.Equal(t, events.APIGatewayProxyResponse{
+	assert.Equal(t, api.Response{
 		StatusCode: http.StatusOK,
 		Headers: map[string]string{
 			api.ContentTypeHeaderName: api.ContentTypeApplicationJSON,
@@ -82,7 +81,7 @@ func TestPutTaskRequestHandler_HandleRequest_TaskCreated(t *testing.T) {
 
 	response, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
 	assert.NoError(t, err)
-	assert.Equal(t, events.APIGatewayProxyResponse{
+	assert.Equal(t, api.Response{
 		StatusCode: http.StatusCreated,
 		Headers: map[string]string{
 			api.ContentTypeHeaderName: api.ContentTypeApplicationJSON,
@@ -99,7 +98,7 @@ func TestPutTaskRequestHandler_HandleRequest_TaskNotChanged(t *testing.T) {
 
 	response, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
 	assert.NoError(t, err)
-	assert.Equal(t, events.APIGatewayProxyResponse{
+	assert.Equal(t, api.Response{
 		StatusCode: http.StatusNoContent,
 	}, response)
 }
@@ -112,7 +111,7 @@ func TestPutTaskRequestHandler_HandleRequest_DuplicatedLastTask(t *testing.T) {
 
 	response, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
 	assert.NoError(t, err)
-	assert.Equal(t, events.APIGatewayProxyResponse{
+	assert.Equal(t, api.Response{
 		StatusCode: http.StatusConflict,
 		Headers: map[string]string{
 			api.ContentTypeHeaderName: api.ContentTypeTextPlain,

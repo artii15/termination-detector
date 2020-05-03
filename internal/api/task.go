@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	TaskIDPathParameter = "task_id"
+	ProcessIDPathParameter = "process_id"
+	TaskIDPathParameter    = "task_id"
 )
 
 type Task struct {
@@ -26,4 +27,16 @@ func (task *Task) JSON() string {
 func UnmarshalTask(marshalledTask string) (task Task, err error) {
 	err = json.Unmarshal([]byte(marshalledTask), &task)
 	return
+}
+
+type CompletionState string
+
+const (
+	CompletionStateError     CompletionState = "ERROR"
+	CompletionStateCompleted CompletionState = "COMPLETED"
+)
+
+type Completion struct {
+	State        CompletionState `json:"state"`
+	ErrorMessage *string         `json:"errorMessage,omitempty"`
 }

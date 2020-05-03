@@ -3,7 +3,6 @@ package api
 import (
 	"net/http"
 
-	"github.com/aws/aws-lambda-go/events"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -20,7 +19,7 @@ const (
 )
 
 type RequestHandler interface {
-	HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error)
+	HandleRequest(request Request) (Response, error)
 }
 
 type Router struct {
@@ -33,8 +32,21 @@ func NewRouter(requestsHandlers RequestsHandlersMap) *Router {
 	}
 }
 
-func (router *Router) Route(request events.APIGatewayProxyRequest) events.APIGatewayProxyResponse {
-	methodsHandlers, handlersForResourceExist := router.requestsHandlers[ResourcePath(request.Resource)]
+type Request struct {
+	HTTPMethod     HTTPMethod
+	ResourcePath   ResourcePath
+	Body           string
+	PathParameters map[string]string
+}
+
+type Response struct {
+	StatusCode int
+	Body       string
+	Headers    map[string]string
+}
+
+func (router *Router) Route(request Request) Response {
+	methodsHandlers, handlersForResourceExist := router.requestsHandlers[request.ResourcePath]
 	if !handlersForResourceExist {
 		return createDefaultTextResponseWithStatus(http.StatusNotFound)
 	}
@@ -52,8 +64,8 @@ func (router *Router) Route(request events.APIGatewayProxyRequest) events.APIGat
 	return response
 }
 
-func createDefaultTextResponseWithStatus(statusCode int) events.APIGatewayProxyResponse {
-	return events.APIGatewayProxyResponse{
+func createDefaultTextResponseWithStatus(statusCode int) Response {
+	return Response{
 		StatusCode: statusCode,
 		Body:       http.StatusText(statusCode),
 		Headers: map[string]string{
