@@ -42,7 +42,7 @@ func newTask(toConvert internalTask.Task, ttl int64) task {
 		ExpirationTime:  toConvert.ExpirationTime,
 		State:           toConvert.State,
 		TTL:             ttl,
-		ProcessingState: fmt.Sprintf("%s__%s__%s", toConvert.State, toConvert.ExpirationTime, toConvert.ID),
+		ProcessingState: fmt.Sprintf("%s__%s__%s", toConvert.State, toConvert.ExpirationTime, toConvert.TaskID),
 	}
 }
 
