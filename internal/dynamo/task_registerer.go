@@ -59,14 +59,15 @@ func (registerer *TaskRegisterer) putTask(registrationData internalTask.Registra
 		State:          internalTask.StateCreated,
 	}, calculateTTL(currentDate, registerer.tasksStoringDuration))
 
-	condExpr := "(attribute_not_exists(#process_id) and attribute_not_exists(#processing_state)) or (#state = :stateCreated and #expiration_time > :currentTime)"
+	condExpr := `(attribute_not_exists(#processID) and attribute_not_exists(#taskID)) or 
+		(#state = :stateCreated and #expirationTime > :currentTime)`
 	return registerer.dynamoAPI.PutItem(&dynamodb.PutItemInput{
 		ConditionExpression: &condExpr,
 		ExpressionAttributeNames: map[string]*string{
-			"#process_id":       aws.String("process_id"),
-			"#processing_state": aws.String("processing_state"),
-			"#state":            aws.String("state"),
-			"#expiration_time":  aws.String("expiration_time"),
+			"#processID":      aws.String("process_id"),
+			"#taskID":         aws.String("task_id"),
+			"#state":          aws.String("state"),
+			"#expirationTime": aws.String("expiration_time"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":stateCreated": {S: aws.String(string(internalTask.StateCreated))},

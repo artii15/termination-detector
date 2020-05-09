@@ -40,3 +40,8 @@ type Completion struct {
 	State        CompletionState `json:"state"`
 	ErrorMessage *string         `json:"errorMessage,omitempty"`
 }
+
+func UnmarshalCompletion(marshalledCompletion string) (completion Completion, err error) {
+	err = json.Unmarshal([]byte(marshalledCompletion), &completion)
+	return
+}

@@ -6,6 +6,14 @@ type CompleteRequest struct {
 	Message *string
 }
 
+type CompletingResult string
+
+const (
+	CompletingResultNotChanged CompletingResult = "NOT_CHANGED"
+	CompletingResultConflict   CompletingResult = "CONFLICT"
+	CompletingResultCompleted  CompletingResult = "COMPLETED"
+)
+
 type Completer interface {
-	Complete(request CompleteRequest) error
+	Complete(request CompleteRequest) (CompletingResult, error)
 }

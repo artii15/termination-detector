@@ -16,6 +16,7 @@ type task struct {
 	State           internalTask.State `json:"state"`
 	TTL             int64              `json:"ttl"`
 	ProcessingState string             `json:"processing_state"`
+	StateMessage    *string            `json:"state_message"`
 }
 
 func (task task) dynamoItem() map[string]*dynamodb.AttributeValue {
@@ -39,9 +40,14 @@ func newTask(toConvert internalTask.Task, ttl int64) task {
 		ProcessID:       toConvert.ProcessID,
 		ExpirationTime:  toConvert.ExpirationTime,
 		State:           toConvert.State,
+		StateMessage:    toConvert.StateMessage,
 		TTL:             ttl,
-		ProcessingState: fmt.Sprintf("%s__%s__%s", toConvert.State, toConvert.ExpirationTime, toConvert.TaskID),
+		ProcessingState: makeProcessingState(toConvert.State, toConvert.ExpirationTime),
 	}
+}
+
+func makeProcessingState(state internalTask.State, expirationTime time.Time) string {
+	return fmt.Sprintf("%s__%s", state, expirationTime)
 }
 
 func readDynamoTask(dynamoTask map[string]*dynamodb.AttributeValue) (unmarshalled task) {

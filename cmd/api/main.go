@@ -48,9 +48,14 @@ func main() {
 	currentDateGetter := dates.NewCurrentDateGetter()
 	taskRegisterer := dynamo.NewTaskRegisterer(dynamoAPI, tasksTableName, currentDateGetter, tasksStoringDuration)
 	putTaskRequestHandler := handlers.NewPutTaskRequestHandler(taskRegisterer)
+	taskCompleter := dynamo.NewTaskCompleter(dynamoAPI, tasksTableName, currentDateGetter)
+	putTaskCompletionRequestHandler := handlers.NewPutTaskCompletionRequestHandler(taskCompleter)
 	router := api.NewRouter(map[api.ResourcePath]map[api.HTTPMethod]api.RequestHandler{
 		api.ResourcePathTask: {
 			api.HTTPMethodPut: putTaskRequestHandler,
+		},
+		api.ResourcePathTaskCompletion: {
+			api.HTTPMethodPut: putTaskCompletionRequestHandler,
 		},
 	})
 	handler := apiGatewayEventHandler{router: router}
