@@ -33,8 +33,12 @@ export class TerminationDetectorStack extends cdk.Stack {
     const processes = api.root.addResource('processes');
     const process = processes.addResource('{process_id}');
     const tasks = process.addResource('tasks');
-    const task = tasks.addResource('{task_id}')
+    const task = tasks.addResource('{task_id}');
     task.addMethod('PUT', apiLambdaIntegration, {
+      authorizationType: apiGW.AuthorizationType.IAM
+    });
+    const taskCompletion = task.addResource('completion');
+    taskCompletion.addMethod('PUT', apiLambdaIntegration, {
       authorizationType: apiGW.AuthorizationType.IAM
     });
   }

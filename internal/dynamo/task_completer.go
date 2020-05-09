@@ -29,7 +29,7 @@ func NewTaskCompleter(dynamoAPI dynamodbiface.DynamoDBAPI, tasksTableName string
 func (completer *TaskCompleter) Complete(request internalTask.CompleteRequest) (internalTask.CompletingResult, error) {
 	currentTime := completer.currentDateGetter.GetCurrentDate()
 	conditionExpr := `attribute_exists(#processID) and attribute_exists(#taskID) and 
-		#expirationTime < :currentTime and
+		#expirationTime > :currentTime and
 		(#state = :stateCreated or (#state = :newState and #stateMessage = :newStateMessage))`
 	expressionAttributeValues := map[string]*dynamodb.AttributeValue{
 		":currentTime":     {S: aws.String(currentTime.Format(time.RFC3339))},
