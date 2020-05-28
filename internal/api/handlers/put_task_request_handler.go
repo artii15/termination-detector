@@ -8,7 +8,10 @@ import (
 	"github.com/nordcloud/termination-detector/internal/task"
 )
 
-const TaskInIncompatibleStateErrorMessage = "task is in incompatible state and can not be updated"
+const (
+	TaskInIncompatibleStateErrorMessage = "task is in incompatible state and can not be updated"
+	InvalidPayloadErrorMessage          = "invalid payload provided"
+)
 
 type PutTaskRequestHandler struct {
 	registerer task.Registerer
@@ -23,7 +26,11 @@ func NewPutTaskRequestHandler(registerer task.Registerer) *PutTaskRequestHandler
 func (handler *PutTaskRequestHandler) HandleRequest(request api.Request) (api.Response, error) {
 	unmarshalledTask, err := api.UnmarshalTask(request.Body)
 	if err != nil {
-		return api.Response{}, err
+		return api.Response{
+			StatusCode: http.StatusBadRequest,
+			Body:       InvalidPayloadErrorMessage,
+			Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeTextPlain},
+		}, nil
 	}
 
 	registrationResult, err := handler.registerer.Register(task.RegistrationData{

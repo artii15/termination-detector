@@ -29,6 +29,10 @@ type putTaskReqHandlerWithMocks struct {
 	handler            *handlers.PutTaskRequestHandler
 }
 
+func (handlerAndMocks *putTaskReqHandlerWithMocks) assertExpectations(t *testing.T) {
+	handlerAndMocks.taskRegistererMock.AssertExpectations(t)
+}
+
 func newPutTaskReqHandlerWithMocks() *putTaskReqHandlerWithMocks {
 	taskRegisterer := new(taskRegistererMock)
 	apiTask := api.Task{
@@ -64,6 +68,7 @@ func TestPutTaskRequestHandler_HandleRequest_TaskCreated(t *testing.T) {
 
 	response, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
 	assert.NoError(t, err)
+	handlerAndMocks.assertExpectations(t)
 	assert.Equal(t, api.Response{
 		StatusCode: http.StatusCreated,
 		Headers: map[string]string{
@@ -81,6 +86,7 @@ func TestPutTaskRequestHandler_HandleRequest_DuplicatedLastTask(t *testing.T) {
 
 	response, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
 	assert.NoError(t, err)
+	handlerAndMocks.assertExpectations(t)
 	assert.Equal(t, api.Response{
 		StatusCode: http.StatusConflict,
 		Headers: map[string]string{
@@ -97,6 +103,7 @@ func TestPutTaskRequestHandler_HandleRequest_UnknownRegistrationResult(t *testin
 		Return(task.RegistrationResult("unknown"), nil)
 
 	_, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
+	handlerAndMocks.assertExpectations(t)
 	assert.Error(t, err)
 }
 
@@ -107,5 +114,21 @@ func TestPutTaskRequestHandler_HandleRequest_RegistrationFailure(t *testing.T) {
 		Return(task.RegistrationResult(""), errors.New("error"))
 
 	_, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
+	handlerAndMocks.assertExpectations(t)
 	assert.Error(t, err)
+}
+
+func TestPutTaskRequestHandler_HandleRequest_InvalidBody(t *testing.T) {
+	handlerAndMocks := newPutTaskReqHandlerWithMocks()
+	handlerAndMocks.request.Body = ""
+
+	response, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
+	assert.NoError(t, err)
+	assert.Equal(t, api.Response{
+		StatusCode: http.StatusBadRequest,
+		Body:       handlers.InvalidPayloadErrorMessage,
+		Headers: map[string]string{
+			api.ContentTypeHeaderName: api.ContentTypeTextPlain,
+		},
+	}, response)
 }
