@@ -8,7 +8,7 @@ import (
 	"github.com/nordcloud/termination-detector/internal/task"
 )
 
-const TaskInTerminalStateErrorMessage = "task is in terminal state and can not be updated"
+const TaskInIncompatibleStateErrorMessage = "task is in incompatible state and can not be updated"
 
 type PutTaskRequestHandler struct {
 	registerer task.Registerer
@@ -49,21 +49,11 @@ func mapTaskRegistrationStatusToResponse(request api.Request,
 			Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeApplicationJSON},
 			Body:       request.Body,
 		}, nil
-	case task.RegistrationResultChanged:
-		return api.Response{
-			StatusCode: http.StatusOK,
-			Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeApplicationJSON},
-			Body:       request.Body,
-		}, nil
-	case task.RegistrationResultNotChanged:
-		return api.Response{
-			StatusCode: http.StatusNoContent,
-		}, nil
-	case task.RegistrationResultErrorTerminalState:
+	case task.RegistrationResultAlreadyRegistered:
 		return api.Response{
 			StatusCode: http.StatusConflict,
 			Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeTextPlain},
-			Body:       TaskInTerminalStateErrorMessage,
+			Body:       TaskInIncompatibleStateErrorMessage,
 		}, nil
 	default:
 		return api.Response{}, fmt.Errorf("unknown registration result: %s", registrationResult)

@@ -56,23 +56,6 @@ func newPutTaskReqHandlerWithMocks() *putTaskReqHandlerWithMocks {
 	}
 }
 
-func TestPutTaskRequestHandler_HandleRequest_TaskChanged(t *testing.T) {
-	handlerAndMocks := newPutTaskReqHandlerWithMocks()
-
-	handlerAndMocks.taskRegistererMock.On("Register", handlerAndMocks.registrationData).
-		Return(task.RegistrationResultChanged, nil)
-
-	response, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
-	assert.NoError(t, err)
-	assert.Equal(t, api.Response{
-		StatusCode: http.StatusOK,
-		Headers: map[string]string{
-			api.ContentTypeHeaderName: api.ContentTypeApplicationJSON,
-		},
-		Body: handlerAndMocks.request.Body,
-	}, response)
-}
-
 func TestPutTaskRequestHandler_HandleRequest_TaskCreated(t *testing.T) {
 	handlerAndMocks := newPutTaskReqHandlerWithMocks()
 
@@ -90,24 +73,11 @@ func TestPutTaskRequestHandler_HandleRequest_TaskCreated(t *testing.T) {
 	}, response)
 }
 
-func TestPutTaskRequestHandler_HandleRequest_TaskNotChanged(t *testing.T) {
-	handlerAndMocks := newPutTaskReqHandlerWithMocks()
-
-	handlerAndMocks.taskRegistererMock.On("Register", handlerAndMocks.registrationData).
-		Return(task.RegistrationResultNotChanged, nil)
-
-	response, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
-	assert.NoError(t, err)
-	assert.Equal(t, api.Response{
-		StatusCode: http.StatusNoContent,
-	}, response)
-}
-
 func TestPutTaskRequestHandler_HandleRequest_DuplicatedLastTask(t *testing.T) {
 	handlerAndMocks := newPutTaskReqHandlerWithMocks()
 
 	handlerAndMocks.taskRegistererMock.On("Register", handlerAndMocks.registrationData).
-		Return(task.RegistrationResultErrorTerminalState, nil)
+		Return(task.RegistrationResultAlreadyRegistered, nil)
 
 	response, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
 	assert.NoError(t, err)
@@ -116,7 +86,7 @@ func TestPutTaskRequestHandler_HandleRequest_DuplicatedLastTask(t *testing.T) {
 		Headers: map[string]string{
 			api.ContentTypeHeaderName: api.ContentTypeTextPlain,
 		},
-		Body: handlers.TaskInTerminalStateErrorMessage,
+		Body: handlers.TaskInIncompatibleStateErrorMessage,
 	}, response)
 }
 

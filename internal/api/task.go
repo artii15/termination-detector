@@ -16,7 +16,7 @@ type Task struct {
 	ExpirationTime time.Time `json:"expirationTime"`
 }
 
-func (task *Task) JSON() string {
+func (task Task) JSON() string {
 	marshalledTask, err := json.Marshal(task)
 	if err != nil {
 		panic(errors.Wrapf(err, "failed to marshal task: %+v", marshalledTask))

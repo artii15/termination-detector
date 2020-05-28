@@ -61,10 +61,6 @@ func (handler *PutTaskCompletionRequestHandler) HandleRequest(request api.Reques
 
 func mapCompletingResultToResponse(request api.Request, result task.CompletingResult) api.Response {
 	switch result {
-	case task.CompletingResultNotChanged:
-		return api.Response{
-			StatusCode: http.StatusNoContent,
-		}
 	case task.CompletingResultConflict:
 		return api.Response{
 			StatusCode: http.StatusConflict,

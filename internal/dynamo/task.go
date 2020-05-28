@@ -5,54 +5,33 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	internalTask "github.com/nordcloud/termination-detector/internal/task"
+	"github.com/nordcloud/termination-detector/internal/task"
 )
 
-type task struct {
-	TaskID          string             `json:"task_id"`
-	ProcessID       string             `json:"process_id"`
-	ExpirationTime  time.Time          `json:"expiration_time"`
-	State           internalTask.State `json:"state"`
-	TTL             int64              `json:"ttl"`
-	ProcessingState string             `json:"processing_state"`
-	StateMessage    *string            `json:"state_message"`
-}
-
-func (task task) dynamoItem() map[string]*dynamodb.AttributeValue {
-	marshalled, err := dynamodbattribute.MarshalMap(task)
+func readTaskBadStateEnterTime(dynamoTask map[string]*dynamodb.AttributeValue) (time.Time, error) {
+	badStateEnterTimeAttr, isBadStateEnterTimeDefined := dynamoTask["bad_state_enter_time"]
+	if !isBadStateEnterTimeDefined || badStateEnterTimeAttr.S == nil {
+		return time.Time{}, fmt.Errorf("item does not contain bad state enter time attribute: %+v", dynamoTask)
+	}
+	badStateEnterTime, err := time.Parse(time.RFC3339, *badStateEnterTimeAttr.S)
 	if err != nil {
-		panic(fmt.Sprintf("failed to marshal task: %s\n%+v", err.Error(), task))
+		return time.Time{}, err
 	}
-	return marshalled
+	return badStateEnterTime, nil
 }
 
-func (task task) ID() internalTask.ID {
-	return internalTask.ID{
-		TaskID:    task.TaskID,
-		ProcessID: task.ProcessID,
+func readTaskState(dynamoTask map[string]*dynamodb.AttributeValue) (task.State, error) {
+	taskStateAttr, isTaskStateDefined := dynamoTask["state"]
+	if !isTaskStateDefined || taskStateAttr.S == nil {
+		return "", fmt.Errorf("item does not contain task state attribute: %+v", dynamoTask)
 	}
+	return task.State(*taskStateAttr.S), nil
 }
 
-func newTask(toConvert internalTask.Task, ttl int64) task {
-	return task{
-		TaskID:          toConvert.TaskID,
-		ProcessID:       toConvert.ProcessID,
-		ExpirationTime:  toConvert.ExpirationTime,
-		State:           toConvert.State,
-		StateMessage:    toConvert.StateMessage,
-		TTL:             ttl,
-		ProcessingState: makeProcessingState(toConvert.State, toConvert.ExpirationTime),
+func readTaskStateMessage(dynamoTask map[string]*dynamodb.AttributeValue) *string {
+	stateMsgAttr, isStateMsgDefined := dynamoTask["state_message"]
+	if !isStateMsgDefined || stateMsgAttr.S == nil {
+		return nil
 	}
-}
-
-func makeProcessingState(state internalTask.State, expirationTime time.Time) string {
-	return fmt.Sprintf("%s__%s", state, expirationTime)
-}
-
-func readDynamoTask(dynamoTask map[string]*dynamodb.AttributeValue) (unmarshalled task) {
-	if err := dynamodbattribute.UnmarshalMap(dynamoTask, &unmarshalled); err != nil {
-		panic(fmt.Sprintf("failed to unmarshal task: %s\n%+v", err.Error(), dynamoTask))
-	}
-	return unmarshalled
+	return stateMsgAttr.S
 }

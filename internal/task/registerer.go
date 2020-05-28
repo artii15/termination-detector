@@ -5,10 +5,8 @@ import "time"
 type RegistrationResult string
 
 const (
-	RegistrationResultCreated            RegistrationResult = "CREATED"
-	RegistrationResultNotChanged         RegistrationResult = "NOT_CHANGED"
-	RegistrationResultChanged            RegistrationResult = "CHANGED"
-	RegistrationResultErrorTerminalState RegistrationResult = "ALREADY_IN_TERMINAL_STATE"
+	RegistrationResultCreated           RegistrationResult = "CREATED"
+	RegistrationResultAlreadyRegistered RegistrationResult = "ALREADY_REGISTERED"
 )
 
 type RegistrationData struct {

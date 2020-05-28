@@ -13,6 +13,7 @@ type RequestsHandlersMap map[ResourcePath]map[HTTPMethod]RequestHandler
 const (
 	ResourcePathTask           ResourcePath = "/processes/{process_id}/tasks/{task_id}"
 	ResourcePathTaskCompletion ResourcePath = "/processes/{process_id}/tasks/{task_id}/completion"
+	ResourcePathProcess        ResourcePath = "/processes/{process_id}"
 
 	HTTPMethodGet HTTPMethod = http.MethodGet
 	HTTPMethodPut HTTPMethod = http.MethodPut
@@ -51,7 +52,7 @@ func (router *Router) Route(request Request) Response {
 		return createDefaultTextResponseWithStatus(http.StatusNotFound)
 	}
 
-	requestHandler, handlerExists := methodsHandlers[HTTPMethod(request.HTTPMethod)]
+	requestHandler, handlerExists := methodsHandlers[request.HTTPMethod]
 	if !handlerExists {
 		return createDefaultTextResponseWithStatus(http.StatusNotFound)
 	}

@@ -1,6 +1,7 @@
 package dynamo
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -11,6 +12,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	internalTask "github.com/nordcloud/termination-detector/internal/task"
 )
+
+const decimalBase = 10
 
 type currentDateGetter interface {
 	GetCurrentDate() time.Time
@@ -34,51 +37,44 @@ func NewTaskRegisterer(dynamoAPI dynamodbiface.DynamoDBAPI, tasksTableName strin
 }
 
 func (registerer *TaskRegisterer) Register(registrationData internalTask.RegistrationData) (internalTask.RegistrationResult, error) {
-	putTaskOutput, err := registerer.putTask(registrationData)
-	if err != nil {
+	if err := registerer.putTask(registrationData); err != nil {
 		if awsErr, isAWSErr := err.(awserr.Error); isAWSErr && awsErr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
-			return internalTask.RegistrationResultErrorTerminalState, nil
+			return internalTask.RegistrationResultAlreadyRegistered, nil
 		}
 		return "", err
 	}
-	if len(putTaskOutput.Attributes) == 0 {
-		return internalTask.RegistrationResultCreated, nil
-	}
-	oldTask := readDynamoTask(putTaskOutput.Attributes)
-	if registrationData.ID.Equals(oldTask.ID()) && registrationData.ExpirationTime.Equal(oldTask.ExpirationTime) {
-		return internalTask.RegistrationResultNotChanged, nil
-	}
-	return internalTask.RegistrationResultChanged, nil
+	return internalTask.RegistrationResultCreated, nil
 }
 
-func (registerer *TaskRegisterer) putTask(registrationData internalTask.RegistrationData) (*dynamodb.PutItemOutput, error) {
+func (registerer *TaskRegisterer) putTask(registrationData internalTask.RegistrationData) error {
 	currentDate := registerer.currentDateGetter.GetCurrentDate()
-	taskToRegister := newTask(internalTask.Task{
-		ID:             registrationData.ID,
-		ExpirationTime: registrationData.ExpirationTime,
-		State:          internalTask.StateCreated,
-	}, calculateTTL(currentDate, registerer.tasksStoringDuration))
-
-	condExpr := `(attribute_not_exists(#processID) and attribute_not_exists(#taskID)) or 
-		(#state = :stateCreated and #expirationTime > :currentTime)`
-	return registerer.dynamoAPI.PutItem(&dynamodb.PutItemInput{
+	condExpr := `attribute_not_exists(#processID) and attribute_not_exists(#taskID)`
+	updateExpr := `SET #expirationTime = :expirationTime, #state = :stateCreated, #ttl = :ttl, #badStateEnterTime = :badStateEnterTime`
+	ttl := currentDate.Add(registerer.tasksStoringDuration).UTC().Unix()
+	ttlString := strconv.FormatInt(ttl, decimalBase)
+	expirationTimeString := registrationData.ExpirationTime.Format(time.RFC3339)
+	_, err := registerer.dynamoAPI.UpdateItem(&dynamodb.UpdateItemInput{
 		ConditionExpression: &condExpr,
 		ExpressionAttributeNames: map[string]*string{
-			"#processID":      aws.String("process_id"),
-			"#taskID":         aws.String("task_id"),
-			"#state":          aws.String("state"),
-			"#expirationTime": aws.String("expiration_time"),
+			"#processID":         aws.String("process_id"),
+			"#taskID":            aws.String("task_id"),
+			"#state":             aws.String("state"),
+			"#expirationTime":    aws.String("expiration_time"),
+			"#ttl":               aws.String("ttl"),
+			"#badStateEnterTime": aws.String("bad_state_enter_time"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":stateCreated": {S: aws.String(string(internalTask.StateCreated))},
-			":currentTime":  {S: aws.String(currentDate.Format(time.RFC3339))},
+			":stateCreated":      {S: aws.String(string(internalTask.StateCreated))},
+			":ttl":               {N: &ttlString},
+			":expirationTime":    {S: &expirationTimeString},
+			":badStateEnterTime": {S: &expirationTimeString},
 		},
-		Item:         taskToRegister.dynamoItem(),
-		TableName:    &registerer.tasksTableName,
-		ReturnValues: aws.String(dynamodb.ReturnValueAllOld),
+		UpdateExpression: &updateExpr,
+		TableName:        &registerer.tasksTableName,
+		Key: map[string]*dynamodb.AttributeValue{
+			"process_id": {S: &registrationData.ID.ProcessID},
+			"task_id":    {S: &registrationData.ID.TaskID},
+		},
 	})
-}
-
-func calculateTTL(currentDate time.Time, itemStoringDuration time.Duration) int64 {
-	return currentDate.Add(itemStoringDuration).Unix()
+	return err
 }

@@ -50,12 +50,17 @@ func main() {
 	putTaskRequestHandler := handlers.NewPutTaskRequestHandler(taskRegisterer)
 	taskCompleter := dynamo.NewTaskCompleter(dynamoAPI, tasksTableName, currentDateGetter)
 	putTaskCompletionRequestHandler := handlers.NewPutTaskCompletionRequestHandler(taskCompleter)
+	processGetter := dynamo.NewProcessGetter(dynamoAPI, tasksTableName, currentDateGetter)
+	getProcessRequestHandler := handlers.NewGetProcessRequestHandler(processGetter)
 	router := api.NewRouter(map[api.ResourcePath]map[api.HTTPMethod]api.RequestHandler{
 		api.ResourcePathTask: {
 			api.HTTPMethodPut: putTaskRequestHandler,
 		},
 		api.ResourcePathTaskCompletion: {
 			api.HTTPMethodPut: putTaskCompletionRequestHandler,
+		},
+		api.ResourcePathProcess: {
+			api.HTTPMethodGet: getProcessRequestHandler,
 		},
 	})
 	handler := apiGatewayEventHandler{router: router}
