@@ -11,8 +11,6 @@ import (
 	internalTask "github.com/nordcloud/termination-detector/internal/task"
 )
 
-const taskBadStateEnterTimeZeroValue = "0"
-
 type TaskCompleter struct {
 	dynamoAPI         dynamodbiface.DynamoDBAPI
 	tasksTableName    string

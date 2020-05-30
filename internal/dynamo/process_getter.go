@@ -11,10 +11,15 @@ import (
 )
 
 const (
-	taskBadStateEnterTimeIndex = "badStateEnterTimeIndex"
+	taskBadStateEnterTimeIndex                = "badStateEnterTimeIndex"
+	taskBadStateEnterTimeZeroValuePlaceholder = ":badStateEnterTimeZeroValue"
 )
 
-var QueryProcExistsKeyCondExpression = fmt.Sprintf("%s = %s", ProcessIDAttrAlias, ProcessIDValuePlaceholder)
+var (
+	queryProcExistsKeyCondExpression = fmt.Sprintf("%s = %s", processIDAttrAlias, processIDValuePlaceholder)
+	queryGetProcessKeyCondExpression = fmt.Sprintf("%s = %s and %s > %s", processIDAttrAlias,
+		processIDValuePlaceholder, taskBadStateEnterTimeAttrAlias, taskBadStateEnterTimeZeroValuePlaceholder)
+)
 
 type ProcessGetter struct {
 	dynamoAPI         dynamodbiface.DynamoDBAPI
@@ -52,33 +57,19 @@ func BuildCheckIfProcessExistsQueryInput(tableName, processID string) *dynamodb.
 	return &dynamodb.QueryInput{
 		ConsistentRead: aws.Bool(true),
 		ExpressionAttributeNames: map[string]*string{
-			ProcessIDAttrAlias: aws.String(ProcessIDAttrName),
+			processIDAttrAlias: aws.String(ProcessIDAttrName),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			ProcessIDValuePlaceholder: {S: &processID},
+			processIDValuePlaceholder: {S: &processID},
 		},
-		KeyConditionExpression: &QueryProcExistsKeyCondExpression,
+		KeyConditionExpression: &queryProcExistsKeyCondExpression,
 		Limit:                  aws.Int64(1),
 		TableName:              &tableName,
 	}
 }
 
 func (getter *ProcessGetter) getProcess(processID string) (process.Process, error) {
-	out, err := getter.dynamoAPI.Query(&dynamodb.QueryInput{
-		ConsistentRead: aws.Bool(true),
-		ExpressionAttributeNames: map[string]*string{
-			"#processID":         aws.String("process_id"),
-			"#badStateEnterTime": aws.String("bad_state_enter_time"),
-		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":processID":                  {S: &processID},
-			":badStateEnterTimeZeroValue": {S: aws.String(taskBadStateEnterTimeZeroValue)},
-		},
-		IndexName:              aws.String(taskBadStateEnterTimeIndex),
-		KeyConditionExpression: aws.String("#processID = :processID and #badStateEnterTime > :badStateEnterTimeZeroValue"),
-		Limit:                  aws.Int64(1),
-		TableName:              &getter.tasksTableName,
-	})
+	out, err := getter.dynamoAPI.Query(BuildGetProcessQueryInput(getter.tasksTableName, processID))
 	if err != nil {
 		return process.Process{}, err
 	}
@@ -114,6 +105,24 @@ func (getter *ProcessGetter) getProcess(processID string) (process.Process, erro
 	return process.Process{
 		ID:           processID,
 		State:        process.StateError,
-		StateMessage: aws.String("process timed out"),
+		StateMessage: aws.String(process.TimedOutErrorMessage),
 	}, nil
+}
+
+func BuildGetProcessQueryInput(tableName, processID string) *dynamodb.QueryInput {
+	return &dynamodb.QueryInput{
+		ConsistentRead: aws.Bool(true),
+		ExpressionAttributeNames: map[string]*string{
+			processIDAttrAlias:             aws.String(processIDValuePlaceholder),
+			taskBadStateEnterTimeAttrAlias: aws.String(TaskBadStateEnterTimeAttrName),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			processIDValuePlaceholder:                 {S: &processID},
+			taskBadStateEnterTimeZeroValuePlaceholder: {S: aws.String(taskBadStateEnterTimeZeroValue)},
+		},
+		IndexName:              aws.String(taskBadStateEnterTimeIndex),
+		KeyConditionExpression: &queryGetProcessKeyCondExpression,
+		Limit:                  aws.Int64(1),
+		TableName:              &tableName,
+	}
 }

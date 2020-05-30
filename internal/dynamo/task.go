@@ -9,13 +9,21 @@ import (
 )
 
 const (
-	ProcessIDAttrAlias        = "#processID"
 	ProcessIDAttrName         = "process_id"
-	ProcessIDValuePlaceholder = ":processID"
+	processIDAttrAlias        = "#processID"
+	processIDValuePlaceholder = ":processID"
+
+	taskBadStateEnterTimeAttrAlias = "#badStateEnterTime"
+	TaskBadStateEnterTimeAttrName  = "bad_state_enter_time"
+	taskBadStateEnterTimeZeroValue = "0"
+
+	TaskStateAttrName = "state"
+
+	TaskStateMessageAttrName = "state_message"
 )
 
 func readTaskBadStateEnterTime(dynamoTask map[string]*dynamodb.AttributeValue) (time.Time, error) {
-	badStateEnterTimeAttr, isBadStateEnterTimeDefined := dynamoTask["bad_state_enter_time"]
+	badStateEnterTimeAttr, isBadStateEnterTimeDefined := dynamoTask[TaskBadStateEnterTimeAttrName]
 	if !isBadStateEnterTimeDefined || badStateEnterTimeAttr.S == nil {
 		return time.Time{}, fmt.Errorf("item does not contain bad state enter time attribute: %+v", dynamoTask)
 	}
@@ -27,7 +35,7 @@ func readTaskBadStateEnterTime(dynamoTask map[string]*dynamodb.AttributeValue) (
 }
 
 func readTaskState(dynamoTask map[string]*dynamodb.AttributeValue) (task.State, error) {
-	taskStateAttr, isTaskStateDefined := dynamoTask["state"]
+	taskStateAttr, isTaskStateDefined := dynamoTask[TaskStateAttrName]
 	if !isTaskStateDefined || taskStateAttr.S == nil {
 		return "", fmt.Errorf("item does not contain task state attribute: %+v", dynamoTask)
 	}
@@ -35,7 +43,7 @@ func readTaskState(dynamoTask map[string]*dynamodb.AttributeValue) (task.State, 
 }
 
 func readTaskStateMessage(dynamoTask map[string]*dynamodb.AttributeValue) *string {
-	stateMsgAttr, isStateMsgDefined := dynamoTask["state_message"]
+	stateMsgAttr, isStateMsgDefined := dynamoTask[TaskStateMessageAttrName]
 	if !isStateMsgDefined || stateMsgAttr.S == nil {
 		return nil
 	}

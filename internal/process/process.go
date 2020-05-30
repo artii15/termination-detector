@@ -3,9 +3,11 @@ package process
 type State string
 
 const (
-	StateCompleted = "COMPLETED"
-	StateCreated   = "CREATED"
-	StateError     = "ERROR"
+	StateCompleted State = "COMPLETED"
+	StateCreated   State = "CREATED"
+	StateError     State = "ERROR"
+
+	TimedOutErrorMessage = "process timed out"
 )
 
 type Process struct {
