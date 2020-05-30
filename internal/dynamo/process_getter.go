@@ -89,6 +89,10 @@ func (getter *ProcessGetter) getProcess(processID string) (process.Process, erro
 			StateMessage: readTaskStateMessage(dynamoTask),
 		}, nil
 	}
+	if taskState != task.StateCreated {
+		return process.Process{}, fmt.Errorf("unknown task state: %+v", dynamoTask)
+	}
+
 	badStateEnterTime, err := readTaskBadStateEnterTime(dynamoTask)
 	if err != nil {
 		return process.Process{}, err
