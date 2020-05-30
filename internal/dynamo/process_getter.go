@@ -69,15 +69,18 @@ func BuildCheckIfProcessExistsQueryInput(tableName, processID string) *dynamodb.
 }
 
 func (getter *ProcessGetter) getProcess(processID string) (process.Process, error) {
-	out, err := getter.dynamoAPI.Query(BuildGetProcessQueryInput(getter.tasksTableName, processID))
+	queryResult, err := getter.dynamoAPI.Query(BuildGetProcessQueryInput(getter.tasksTableName, processID))
 	if err != nil {
 		return process.Process{}, err
 	}
-	if out == nil || len(out.Items) == 0 {
+	if queryResult == nil || len(queryResult.Items) == 0 {
 		return process.Process{ID: processID, State: process.StateCompleted}, nil
 	}
+	return getter.readNotCompletedProcess(processID, queryResult.Items[0])
+}
 
-	dynamoTask := out.Items[0]
+func (getter *ProcessGetter) readNotCompletedProcess(processID string, dynamoTask map[string]*dynamodb.AttributeValue) (
+	process.Process, error) {
 	taskState, err := readTaskState(dynamoTask)
 	if err != nil {
 		return process.Process{}, err
@@ -90,22 +93,23 @@ func (getter *ProcessGetter) getProcess(processID string) (process.Process, erro
 		}, nil
 	}
 	if taskState != task.StateCreated {
-		return process.Process{}, fmt.Errorf("unknown task state: %+v", dynamoTask)
+		return process.Process{}, fmt.Errorf("unexpected task state: %+v", dynamoTask)
 	}
 
+	return getter.reportFailureIfTaskTimedOut(processID, dynamoTask)
+}
+
+func (getter *ProcessGetter) reportFailureIfTaskTimedOut(processID string, dynamoTask map[string]*dynamodb.AttributeValue) (process.Process, error) {
 	badStateEnterTime, err := readTaskBadStateEnterTime(dynamoTask)
 	if err != nil {
 		return process.Process{}, err
 	}
-
-	currentDate := getter.currentDateGetter.GetCurrentDate()
-	if badStateEnterTime.After(currentDate) {
+	if getter.currentDateGetter.GetCurrentDate().Before(badStateEnterTime) {
 		return process.Process{
 			ID:    processID,
 			State: process.StateCreated,
 		}, nil
 	}
-
 	return process.Process{
 		ID:           processID,
 		State:        process.StateError,
