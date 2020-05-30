@@ -54,7 +54,7 @@ func (router *Router) Route(request Request) Response {
 
 	requestHandler, handlerExists := methodsHandlers[request.HTTPMethod]
 	if !handlerExists {
-		return createDefaultTextResponseWithStatus(http.StatusNotFound)
+		return createDefaultTextResponseWithStatus(http.StatusMethodNotAllowed)
 	}
 
 	response, err := requestHandler.HandleRequest(request)

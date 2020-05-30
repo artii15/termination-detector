@@ -92,7 +92,7 @@ func TestPutTaskRequestHandler_HandleRequest_DuplicatedLastTask(t *testing.T) {
 		Headers: map[string]string{
 			api.ContentTypeHeaderName: api.ContentTypeTextPlain,
 		},
-		Body: handlers.TaskInIncompatibleStateErrorMessage,
+		Body: handlers.TaskAlreadyCreatedErrorMessage,
 	}, response)
 }
 

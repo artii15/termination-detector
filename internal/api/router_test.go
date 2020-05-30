@@ -83,8 +83,8 @@ func TestRouter_Route_UnknownMethod(t *testing.T) {
 		HTTPMethod:   "PATCH",
 	}
 	expectedResponse := api.Response{
-		StatusCode: http.StatusNotFound,
-		Body:       http.StatusText(http.StatusNotFound),
+		StatusCode: http.StatusMethodNotAllowed,
+		Body:       http.StatusText(http.StatusMethodNotAllowed),
 		Headers: map[string]string{
 			api.ContentTypeHeaderName: api.ContentTypeTextPlain,
 		},

@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	unknownCompletionStateMsg    = "unknown completion state"
-	conflictingTaskCompletionMsg = "task already completed with conflicting status"
-	unknownErrorMsg              = "unknown error"
+	UnknownCompletionStateMsg    = "unknown completion state"
+	ConflictingTaskCompletionMsg = "task not created or already completed"
+	UnknownErrorMsg              = "unknown error"
 )
 
 var completionStateToTaskStateMapping = map[api.CompletionState]task.State{
@@ -32,12 +32,17 @@ func NewPutTaskCompletionRequestHandler(completer task.Completer) *PutTaskComple
 func (handler *PutTaskCompletionRequestHandler) HandleRequest(request api.Request) (api.Response, error) {
 	completion, err := api.UnmarshalCompletion(request.Body)
 	if err != nil {
-		return api.Response{}, err
-	}
-	if completion.State != api.CompletionStateCompleted && completion.State != api.CompletionStateError {
 		return api.Response{
 			StatusCode: http.StatusBadRequest,
-			Body:       unknownCompletionStateMsg,
+			Body:       InvalidPayloadErrorMessage,
+			Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeTextPlain},
+		}, nil
+	}
+	taskCompletionState, isTaskCompletionStateFound := completionStateToTaskStateMapping[completion.State]
+	if !isTaskCompletionStateFound {
+		return api.Response{
+			StatusCode: http.StatusBadRequest,
+			Body:       UnknownCompletionStateMsg,
 			Headers: map[string]string{
 				api.ContentTypeHeaderName: api.ContentTypeTextPlain,
 			},
@@ -49,7 +54,7 @@ func (handler *PutTaskCompletionRequestHandler) HandleRequest(request api.Reques
 			ProcessID: request.PathParameters[api.ProcessIDPathParameter],
 			TaskID:    request.PathParameters[api.TaskIDPathParameter],
 		},
-		State:   completionStateToTaskStateMapping[completion.State],
+		State:   taskCompletionState,
 		Message: completion.ErrorMessage,
 	})
 	if err != nil {
@@ -64,7 +69,7 @@ func mapCompletingResultToResponse(request api.Request, result task.CompletingRe
 	case task.CompletingResultConflict:
 		return api.Response{
 			StatusCode: http.StatusConflict,
-			Body:       conflictingTaskCompletionMsg,
+			Body:       ConflictingTaskCompletionMsg,
 			Headers: map[string]string{
 				api.ContentTypeHeaderName: api.ContentTypeTextPlain,
 			},
@@ -81,7 +86,7 @@ func mapCompletingResultToResponse(request api.Request, result task.CompletingRe
 		logrus.WithField("unknown_completion_result", result).Error("unknown task completion result")
 		return api.Response{
 			StatusCode: http.StatusInternalServerError,
-			Body:       unknownErrorMsg,
+			Body:       UnknownErrorMsg,
 			Headers: map[string]string{
 				api.ContentTypeHeaderName: api.ContentTypeTextPlain,
 			},

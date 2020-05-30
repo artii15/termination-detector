@@ -41,6 +41,14 @@ type Completion struct {
 	ErrorMessage *string         `json:"errorMessage,omitempty"`
 }
 
+func (completion Completion) JSON() string {
+	marshalled, err := json.Marshal(completion)
+	if err != nil {
+		panic(errors.Wrapf(err, "failed to marshal task completion: %+v", completion))
+	}
+	return string(marshalled)
+}
+
 func UnmarshalCompletion(marshalledCompletion string) (completion Completion, err error) {
 	err = json.Unmarshal([]byte(marshalledCompletion), &completion)
 	return
