@@ -4,22 +4,30 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/nordcloud/termination-detector/internal/task"
+
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 )
 
 const (
-	ProcessIDAttrName         = "process_id"
-	processIDAttrAlias        = "#processID"
+	ProcessIDAttrName             = "process_id"
+	taskIDAttrName                = "task_id"
+	TaskBadStateEnterTimeAttrName = "bad_state_enter_time"
+	TaskStateAttrName             = "state"
+	TaskStateMessageAttrName      = "state_message"
+	taskExpirationTimeAttrName    = "expiration_time"
+	taskTTLAttributeName          = "ttl"
+
+	processIDAttrAlias             = "#processID"
+	taskIDAttrAlias                = "#taskID"
+	taskBadStateEnterTimeAttrAlias = "#badStateEnterTime"
+	taskStateAttrAlias             = "#state"
+	taskExpirationTimeAttrAlias    = "#expirationTime"
+	taskTTLAttrAlias               = "#ttl"
+
 	processIDValuePlaceholder = ":processID"
 
-	taskBadStateEnterTimeAttrAlias = "#badStateEnterTime"
-	TaskBadStateEnterTimeAttrName  = "bad_state_enter_time"
 	taskBadStateEnterTimeZeroValue = "0"
-
-	TaskStateAttrName = "state"
-
-	TaskStateMessageAttrName = "state_message"
 )
 
 func readTaskBadStateEnterTime(dynamoTask map[string]*dynamodb.AttributeValue) (time.Time, error) {
