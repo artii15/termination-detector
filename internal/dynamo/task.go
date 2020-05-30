@@ -8,6 +8,12 @@ import (
 	"github.com/nordcloud/termination-detector/internal/task"
 )
 
+const (
+	ProcessIDAttrAlias        = "#processID"
+	ProcessIDAttrName         = "process_id"
+	ProcessIDValuePlaceholder = ":processID"
+)
+
 func readTaskBadStateEnterTime(dynamoTask map[string]*dynamodb.AttributeValue) (time.Time, error) {
 	badStateEnterTimeAttr, isBadStateEnterTimeDefined := dynamoTask["bad_state_enter_time"]
 	if !isBadStateEnterTimeDefined || badStateEnterTimeAttr.S == nil {

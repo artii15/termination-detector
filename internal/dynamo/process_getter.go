@@ -1,6 +1,8 @@
 package dynamo
 
 import (
+	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
@@ -11,6 +13,8 @@ import (
 const (
 	taskBadStateEnterTimeIndex = "badStateEnterTimeIndex"
 )
+
+var QueryProcExistsKeyCondExpression = fmt.Sprintf("%s = %s", ProcessIDAttrAlias, ProcessIDValuePlaceholder)
 
 type ProcessGetter struct {
 	dynamoAPI         dynamodbiface.DynamoDBAPI
@@ -37,22 +41,26 @@ func (getter *ProcessGetter) Get(processID string) (*process.Process, error) {
 }
 
 func (getter *ProcessGetter) exists(processID string) (bool, error) {
-	out, err := getter.dynamoAPI.Query(&dynamodb.QueryInput{
-		ConsistentRead: aws.Bool(true),
-		ExpressionAttributeNames: map[string]*string{
-			"#processID": aws.String("process_id"),
-		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":processID": {S: &processID},
-		},
-		KeyConditionExpression: aws.String("#processID = :processID"),
-		Limit:                  aws.Int64(1),
-		TableName:              &getter.tasksTableName,
-	})
+	out, err := getter.dynamoAPI.Query(BuildCheckIfProcessExistsQueryInput(getter.tasksTableName, processID))
 	if err != nil {
 		return false, err
 	}
 	return out != nil && len(out.Items) > 0, nil
+}
+
+func BuildCheckIfProcessExistsQueryInput(tableName, processID string) *dynamodb.QueryInput {
+	return &dynamodb.QueryInput{
+		ConsistentRead: aws.Bool(true),
+		ExpressionAttributeNames: map[string]*string{
+			ProcessIDAttrAlias: aws.String(ProcessIDAttrName),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			ProcessIDValuePlaceholder: {S: &processID},
+		},
+		KeyConditionExpression: &QueryProcExistsKeyCondExpression,
+		Limit:                  aws.Int64(1),
+		TableName:              &tableName,
+	}
 }
 
 func (getter *ProcessGetter) getProcess(processID string) (process.Process, error) {
