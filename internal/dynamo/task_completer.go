@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/nordcloud/termination-detector/pkg/task"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
-	internalTask "github.com/nordcloud/termination-detector/internal/task"
 )
 
 const (
@@ -43,7 +44,7 @@ func NewTaskCompleter(dynamoAPI dynamodbiface.DynamoDBAPI, tasksTableName string
 	}
 }
 
-func (completer *TaskCompleter) Complete(request internalTask.CompleteRequest) (internalTask.CompletingResult, error) {
+func (completer *TaskCompleter) Complete(request task.CompleteRequest) (task.CompletingResult, error) {
 	updateItemInput := BuildCompleteTaskUpdateItemInput(completer.tasksTableName, CompleteTaskRequest{
 		CompletionTime: completer.currentDateGetter.GetCurrentDate(),
 		TerminalState:  request.State,
@@ -54,16 +55,16 @@ func (completer *TaskCompleter) Complete(request internalTask.CompleteRequest) (
 	_, err := completer.dynamoAPI.UpdateItem(updateItemInput)
 	if err != nil {
 		if awsErr, isAWSErr := err.(awserr.Error); isAWSErr && awsErr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
-			return internalTask.CompletingResultConflict, nil
+			return task.CompletingResultConflict, nil
 		}
 		return "", err
 	}
-	return internalTask.CompletingResultCompleted, nil
+	return task.CompletingResultCompleted, nil
 }
 
 type CompleteTaskRequest struct {
 	CompletionTime time.Time
-	TerminalState  internalTask.State
+	TerminalState  task.State
 	Message        *string
 	ProcessID      string
 	TaskID         string
@@ -72,7 +73,7 @@ type CompleteTaskRequest struct {
 func BuildCompleteTaskUpdateItemInput(tableName string, completeTaskRequest CompleteTaskRequest) *dynamodb.UpdateItemInput {
 	expressionAttributeValues := map[string]*dynamodb.AttributeValue{
 		currentTimeValuePlaceholder:           {S: aws.String(completeTaskRequest.CompletionTime.Format(time.RFC3339))},
-		taskStateCreatedValuePlaceholder:      {S: aws.String(string(internalTask.StateCreated))},
+		taskStateCreatedValuePlaceholder:      {S: aws.String(string(task.StateCreated))},
 		newTaskStateValuePlaceholder:          {S: aws.String(string(completeTaskRequest.TerminalState))},
 		newTaskStateMessageValuePlaceholder:   {NULL: aws.Bool(true)},
 		taskBadStateEnterTimeValuePlaceholder: {S: aws.String(taskBadStateEnterTimeZeroValue)},
@@ -80,7 +81,7 @@ func BuildCompleteTaskUpdateItemInput(tableName string, completeTaskRequest Comp
 	if completeTaskRequest.Message != nil {
 		expressionAttributeValues[newTaskStateMessageValuePlaceholder] = &dynamodb.AttributeValue{S: completeTaskRequest.Message}
 	}
-	if completeTaskRequest.TerminalState == internalTask.StateAborted {
+	if completeTaskRequest.TerminalState == task.StateAborted {
 		expressionAttributeValues[taskBadStateEnterTimeValuePlaceholder] = &dynamodb.AttributeValue{S: aws.String(completeTaskRequest.CompletionTime.Format(time.RFC3339))}
 	}
 

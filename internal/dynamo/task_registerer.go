@@ -5,11 +5,12 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/nordcloud/termination-detector/pkg/task"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
-	internalTask "github.com/nordcloud/termination-detector/internal/task"
 )
 
 const (
@@ -47,17 +48,17 @@ func NewTaskRegisterer(dynamoAPI dynamodbiface.DynamoDBAPI, tasksTableName strin
 	}
 }
 
-func (registerer *TaskRegisterer) Register(registrationData internalTask.RegistrationData) (internalTask.RegistrationResult, error) {
+func (registerer *TaskRegisterer) Register(registrationData task.RegistrationData) (task.RegistrationResult, error) {
 	if err := registerer.saveTask(registrationData); err != nil {
 		if awsErr, isAWSErr := err.(awserr.Error); isAWSErr && awsErr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
-			return internalTask.RegistrationResultAlreadyRegistered, nil
+			return task.RegistrationResultAlreadyRegistered, nil
 		}
 		return "", err
 	}
-	return internalTask.RegistrationResultCreated, nil
+	return task.RegistrationResultCreated, nil
 }
 
-func (registerer *TaskRegisterer) saveTask(registrationData internalTask.RegistrationData) error {
+func (registerer *TaskRegisterer) saveTask(registrationData task.RegistrationData) error {
 	updateItemInput := BuildRegisterTaskUpdateItemInput(registerer.tasksTableName, TaskToRegister{
 		CreationTime:     registerer.currentDateGetter.GetCurrentDate(),
 		StoringDuration:  registerer.tasksStoringDuration,
@@ -70,7 +71,7 @@ func (registerer *TaskRegisterer) saveTask(registrationData internalTask.Registr
 type TaskToRegister struct {
 	CreationTime     time.Time
 	StoringDuration  time.Duration
-	RegistrationData internalTask.RegistrationData
+	RegistrationData task.RegistrationData
 }
 
 func BuildRegisterTaskUpdateItemInput(tableName string, taskToRegister TaskToRegister) *dynamodb.UpdateItemInput {
@@ -88,7 +89,7 @@ func BuildRegisterTaskUpdateItemInput(tableName string, taskToRegister TaskToReg
 			taskBadStateEnterTimeAttrAlias: aws.String(TaskBadStateEnterTimeAttrName),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			taskStateCreatedValuePlaceholder:      {S: aws.String(string(internalTask.StateCreated))},
+			taskStateCreatedValuePlaceholder:      {S: aws.String(string(task.StateCreated))},
 			taskTTLValuePlaceholder:               {N: &ttlString},
 			taskExpirationTimeValuePlaceholder:    {S: &expirationTimeString},
 			taskBadStateEnterTimeValuePlaceholder: {S: &expirationTimeString},

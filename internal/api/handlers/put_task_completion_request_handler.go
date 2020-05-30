@@ -3,8 +3,9 @@ package handlers
 import (
 	"net/http"
 
+	task2 "github.com/nordcloud/termination-detector/pkg/task"
+
 	"github.com/nordcloud/termination-detector/internal/api"
-	"github.com/nordcloud/termination-detector/internal/task"
 	"github.com/sirupsen/logrus"
 )
 
@@ -14,16 +15,16 @@ const (
 	UnknownErrorMsg              = "unknown error"
 )
 
-var completionStateToTaskStateMapping = map[api.CompletionState]task.State{
-	api.CompletionStateError:     task.StateAborted,
-	api.CompletionStateCompleted: task.StateFinished,
+var completionStateToTaskStateMapping = map[api.CompletionState]task2.State{
+	api.CompletionStateError:     task2.StateAborted,
+	api.CompletionStateCompleted: task2.StateFinished,
 }
 
 type PutTaskCompletionRequestHandler struct {
-	completer task.Completer
+	completer task2.Completer
 }
 
-func NewPutTaskCompletionRequestHandler(completer task.Completer) *PutTaskCompletionRequestHandler {
+func NewPutTaskCompletionRequestHandler(completer task2.Completer) *PutTaskCompletionRequestHandler {
 	return &PutTaskCompletionRequestHandler{
 		completer: completer,
 	}
@@ -49,8 +50,8 @@ func (handler *PutTaskCompletionRequestHandler) HandleRequest(request api.Reques
 		}, nil
 	}
 
-	completingResult, err := handler.completer.Complete(task.CompleteRequest{
-		ID: task.ID{
+	completingResult, err := handler.completer.Complete(task2.CompleteRequest{
+		ID: task2.ID{
 			ProcessID: request.PathParameters[api.ProcessIDPathParameter],
 			TaskID:    request.PathParameters[api.TaskIDPathParameter],
 		},
@@ -64,9 +65,9 @@ func (handler *PutTaskCompletionRequestHandler) HandleRequest(request api.Reques
 	return mapCompletingResultToResponse(request, completingResult), nil
 }
 
-func mapCompletingResultToResponse(request api.Request, result task.CompletingResult) api.Response {
+func mapCompletingResultToResponse(request api.Request, result task2.CompletingResult) api.Response {
 	switch result {
-	case task.CompletingResultConflict:
+	case task2.CompletingResultConflict:
 		return api.Response{
 			StatusCode: http.StatusConflict,
 			Body:       ConflictingTaskCompletionMsg,
@@ -74,7 +75,7 @@ func mapCompletingResultToResponse(request api.Request, result task.CompletingRe
 				api.ContentTypeHeaderName: api.ContentTypeTextPlain,
 			},
 		}
-	case task.CompletingResultCompleted:
+	case task2.CompletingResultCompleted:
 		return api.Response{
 			StatusCode: http.StatusCreated,
 			Body:       request.Body,

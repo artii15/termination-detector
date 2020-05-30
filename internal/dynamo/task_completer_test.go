@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	task2 "github.com/nordcloud/termination-detector/pkg/task"
+
 	"github.com/aws/aws-sdk-go/aws/awserr"
 
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -12,8 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/aws/aws-sdk-go/aws"
-
-	"github.com/nordcloud/termination-detector/internal/task"
 
 	"github.com/nordcloud/termination-detector/internal/dynamo"
 )
@@ -41,12 +41,12 @@ func newTaskCompleterWithMocks() *taskCompleterWithMocks {
 
 func TestTaskCompleter_Complete(t *testing.T) {
 	completerAndMocks := newTaskCompleterWithMocks()
-	completeTaskRequest := task.CompleteRequest{
-		ID: task.ID{
+	completeTaskRequest := task2.CompleteRequest{
+		ID: task2.ID{
 			ProcessID: "2",
 			TaskID:    "1",
 		},
-		State:   task.StateAborted,
+		State:   task2.StateAborted,
 		Message: aws.String("failed to execute task"),
 	}
 	completionTime := time.Now().UTC()
@@ -63,17 +63,17 @@ func TestTaskCompleter_Complete(t *testing.T) {
 	taskCompletionResult, err := completerAndMocks.completer.Complete(completeTaskRequest)
 	assert.NoError(t, err)
 	completerAndMocks.assertExpectations(t)
-	assert.Equal(t, task.CompletingResultCompleted, taskCompletionResult)
+	assert.Equal(t, task2.CompletingResultCompleted, taskCompletionResult)
 }
 
 func TestTaskCompleter_Complete_TaskAlreadyCompleted(t *testing.T) {
 	completerAndMocks := newTaskCompleterWithMocks()
-	completeTaskRequest := task.CompleteRequest{
-		ID: task.ID{
+	completeTaskRequest := task2.CompleteRequest{
+		ID: task2.ID{
 			ProcessID: "2",
 			TaskID:    "1",
 		},
-		State:   task.StateAborted,
+		State:   task2.StateAborted,
 		Message: aws.String("failed to execute task"),
 	}
 	completionTime := time.Now().UTC()
@@ -91,17 +91,17 @@ func TestTaskCompleter_Complete_TaskAlreadyCompleted(t *testing.T) {
 	taskCompletionResult, err := completerAndMocks.completer.Complete(completeTaskRequest)
 	assert.NoError(t, err)
 	completerAndMocks.assertExpectations(t)
-	assert.Equal(t, task.CompletingResultConflict, taskCompletionResult)
+	assert.Equal(t, task2.CompletingResultConflict, taskCompletionResult)
 }
 
 func TestTaskCompleter_Complete_UnexpectedError(t *testing.T) {
 	completerAndMocks := newTaskCompleterWithMocks()
-	completeTaskRequest := task.CompleteRequest{
-		ID: task.ID{
+	completeTaskRequest := task2.CompleteRequest{
+		ID: task2.ID{
 			ProcessID: "2",
 			TaskID:    "1",
 		},
-		State:   task.StateAborted,
+		State:   task2.StateAborted,
 		Message: aws.String("failed to execute task"),
 	}
 	completionTime := time.Now().UTC()

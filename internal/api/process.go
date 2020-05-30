@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 
-	"github.com/nordcloud/termination-detector/internal/process"
+	"github.com/nordcloud/termination-detector/pkg/process"
 
 	"github.com/pkg/errors"
 )

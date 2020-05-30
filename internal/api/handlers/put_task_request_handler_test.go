@@ -6,9 +6,10 @@ import (
 	"testing"
 	"time"
 
+	task2 "github.com/nordcloud/termination-detector/pkg/task"
+
 	"github.com/nordcloud/termination-detector/internal/api"
 	"github.com/nordcloud/termination-detector/internal/api/handlers"
-	"github.com/nordcloud/termination-detector/internal/task"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -17,14 +18,14 @@ type taskRegistererMock struct {
 	mock.Mock
 }
 
-func (registerer *taskRegistererMock) Register(registrationData task.RegistrationData) (task.RegistrationResult, error) {
+func (registerer *taskRegistererMock) Register(registrationData task2.RegistrationData) (task2.RegistrationResult, error) {
 	args := registerer.Called(registrationData)
-	return args.Get(0).(task.RegistrationResult), args.Error(1)
+	return args.Get(0).(task2.RegistrationResult), args.Error(1)
 }
 
 type putTaskReqHandlerWithMocks struct {
 	request            api.Request
-	registrationData   task.RegistrationData
+	registrationData   task2.RegistrationData
 	taskRegistererMock *taskRegistererMock
 	handler            *handlers.PutTaskRequestHandler
 }
@@ -48,8 +49,8 @@ func newPutTaskReqHandlerWithMocks() *putTaskReqHandlerWithMocks {
 			},
 			Body: apiTask.JSON(),
 		},
-		registrationData: task.RegistrationData{
-			ID: task.ID{
+		registrationData: task2.RegistrationData{
+			ID: task2.ID{
 				ProcessID: processID,
 				TaskID:    taskID,
 			},
@@ -64,7 +65,7 @@ func TestPutTaskRequestHandler_HandleRequest_TaskCreated(t *testing.T) {
 	handlerAndMocks := newPutTaskReqHandlerWithMocks()
 
 	handlerAndMocks.taskRegistererMock.On("Register", handlerAndMocks.registrationData).
-		Return(task.RegistrationResultCreated, nil)
+		Return(task2.RegistrationResultCreated, nil)
 
 	response, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
 	assert.NoError(t, err)
@@ -82,7 +83,7 @@ func TestPutTaskRequestHandler_HandleRequest_DuplicatedLastTask(t *testing.T) {
 	handlerAndMocks := newPutTaskReqHandlerWithMocks()
 
 	handlerAndMocks.taskRegistererMock.On("Register", handlerAndMocks.registrationData).
-		Return(task.RegistrationResultAlreadyRegistered, nil)
+		Return(task2.RegistrationResultAlreadyRegistered, nil)
 
 	response, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
 	assert.NoError(t, err)
@@ -100,7 +101,7 @@ func TestPutTaskRequestHandler_HandleRequest_UnknownRegistrationResult(t *testin
 	handlerAndMocks := newPutTaskReqHandlerWithMocks()
 
 	handlerAndMocks.taskRegistererMock.On("Register", handlerAndMocks.registrationData).
-		Return(task.RegistrationResult("unknown"), nil)
+		Return(task2.RegistrationResult("unknown"), nil)
 
 	_, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
 	handlerAndMocks.assertExpectations(t)
@@ -111,7 +112,7 @@ func TestPutTaskRequestHandler_HandleRequest_RegistrationFailure(t *testing.T) {
 	handlerAndMocks := newPutTaskReqHandlerWithMocks()
 
 	handlerAndMocks.taskRegistererMock.On("Register", handlerAndMocks.registrationData).
-		Return(task.RegistrationResult(""), errors.New("error"))
+		Return(task2.RegistrationResult(""), errors.New("error"))
 
 	_, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
 	handlerAndMocks.assertExpectations(t)

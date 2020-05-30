@@ -5,29 +5,30 @@ import (
 	"net/http"
 	"testing"
 
+	task2 "github.com/nordcloud/termination-detector/pkg/task"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stretchr/testify/mock"
 
 	"github.com/nordcloud/termination-detector/internal/api"
 	"github.com/nordcloud/termination-detector/internal/api/handlers"
-	"github.com/nordcloud/termination-detector/internal/task"
 )
 
 type taskCompleterMock struct {
 	mock.Mock
 }
 
-func (completer *taskCompleterMock) Complete(request task.CompleteRequest) (task.CompletingResult, error) {
+func (completer *taskCompleterMock) Complete(request task2.CompleteRequest) (task2.CompletingResult, error) {
 	args := completer.Called(request)
-	return args.Get(0).(task.CompletingResult), args.Error(1)
+	return args.Get(0).(task2.CompletingResult), args.Error(1)
 }
 
 type putTaskCompletionReqHandlerWithMocks struct {
 	request       api.Request
 	completion    api.Completion
 	completerMock *taskCompleterMock
-	taskID        task.ID
+	taskID        task2.ID
 	handler       *handlers.PutTaskCompletionRequestHandler
 }
 
@@ -36,7 +37,7 @@ func (handlerAndMocks *putTaskCompletionReqHandlerWithMocks) assertExpectations(
 }
 
 func newPutTaskCompletionReqHandlerWithMocks(completion api.Completion) *putTaskCompletionReqHandlerWithMocks {
-	taskID := task.ID{
+	taskID := task2.ID{
 		ProcessID: "2",
 		TaskID:    "1",
 	}
@@ -59,10 +60,10 @@ func newPutTaskCompletionReqHandlerWithMocks(completion api.Completion) *putTask
 func TestPutTaskCompletionRequestHandler_HandleRequest(t *testing.T) {
 	completion := api.Completion{State: api.CompletionStateCompleted}
 	handlerAndMocks := newPutTaskCompletionReqHandlerWithMocks(completion)
-	handlerAndMocks.completerMock.On("Complete", task.CompleteRequest{
+	handlerAndMocks.completerMock.On("Complete", task2.CompleteRequest{
 		ID:    handlerAndMocks.taskID,
-		State: task.StateFinished,
-	}).Return(task.CompletingResultCompleted, nil)
+		State: task2.StateFinished,
+	}).Return(task2.CompletingResultCompleted, nil)
 
 	response, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
 	handlerAndMocks.assertExpectations(t)
@@ -107,11 +108,11 @@ func TestPutTaskCompletionRequestHandler_HandleRequest_CompleteWithError(t *test
 	errorMsg := "error"
 	completion := api.Completion{State: api.CompletionStateError, ErrorMessage: &errorMsg}
 	handlerAndMocks := newPutTaskCompletionReqHandlerWithMocks(completion)
-	handlerAndMocks.completerMock.On("Complete", task.CompleteRequest{
+	handlerAndMocks.completerMock.On("Complete", task2.CompleteRequest{
 		ID:      handlerAndMocks.taskID,
-		State:   task.StateAborted,
+		State:   task2.StateAborted,
 		Message: &errorMsg,
-	}).Return(task.CompletingResultCompleted, nil)
+	}).Return(task2.CompletingResultCompleted, nil)
 
 	response, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
 	handlerAndMocks.assertExpectations(t)
@@ -126,10 +127,10 @@ func TestPutTaskCompletionRequestHandler_HandleRequest_CompleteWithError(t *test
 func TestPutTaskCompletionRequestHandler_HandleRequest_TaskStateConflict(t *testing.T) {
 	completion := api.Completion{State: api.CompletionStateCompleted}
 	handlerAndMocks := newPutTaskCompletionReqHandlerWithMocks(completion)
-	handlerAndMocks.completerMock.On("Complete", task.CompleteRequest{
+	handlerAndMocks.completerMock.On("Complete", task2.CompleteRequest{
 		ID:    handlerAndMocks.taskID,
-		State: task.StateFinished,
-	}).Return(task.CompletingResultConflict, nil)
+		State: task2.StateFinished,
+	}).Return(task2.CompletingResultConflict, nil)
 
 	response, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
 	handlerAndMocks.assertExpectations(t)
@@ -144,10 +145,10 @@ func TestPutTaskCompletionRequestHandler_HandleRequest_TaskStateConflict(t *test
 func TestPutTaskCompletionRequestHandler_HandleRequest_UnknownCompletionResult(t *testing.T) {
 	completion := api.Completion{State: api.CompletionStateCompleted}
 	handlerAndMocks := newPutTaskCompletionReqHandlerWithMocks(completion)
-	handlerAndMocks.completerMock.On("Complete", task.CompleteRequest{
+	handlerAndMocks.completerMock.On("Complete", task2.CompleteRequest{
 		ID:    handlerAndMocks.taskID,
-		State: task.StateFinished,
-	}).Return(task.CompletingResult("unknown"), nil)
+		State: task2.StateFinished,
+	}).Return(task2.CompletingResult("unknown"), nil)
 
 	response, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
 	handlerAndMocks.assertExpectations(t)
@@ -162,10 +163,10 @@ func TestPutTaskCompletionRequestHandler_HandleRequest_UnknownCompletionResult(t
 func TestPutTaskCompletionRequestHandler_HandleRequest_CompletionError(t *testing.T) {
 	completion := api.Completion{State: api.CompletionStateCompleted}
 	handlerAndMocks := newPutTaskCompletionReqHandlerWithMocks(completion)
-	handlerAndMocks.completerMock.On("Complete", task.CompleteRequest{
+	handlerAndMocks.completerMock.On("Complete", task2.CompleteRequest{
 		ID:    handlerAndMocks.taskID,
-		State: task.StateFinished,
-	}).Return(task.CompletingResultCompleted, errors.New("error"))
+		State: task2.StateFinished,
+	}).Return(task2.CompletingResultCompleted, errors.New("error"))
 
 	_, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
 	handlerAndMocks.assertExpectations(t)

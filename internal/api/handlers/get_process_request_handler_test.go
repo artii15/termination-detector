@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/nordcloud/termination-detector/internal/api"
-	"github.com/nordcloud/termination-detector/internal/process"
+	"github.com/nordcloud/termination-detector/pkg/process"
 	"github.com/stretchr/testify/mock"
 )
 

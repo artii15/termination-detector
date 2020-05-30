@@ -5,12 +5,13 @@ import (
 	"testing"
 	"time"
 
+	task2 "github.com/nordcloud/termination-detector/pkg/task"
+
 	"github.com/aws/aws-sdk-go/aws/awserr"
 
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 
 	"github.com/nordcloud/termination-detector/internal/dynamo"
-	"github.com/nordcloud/termination-detector/internal/task"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -41,8 +42,8 @@ func newTaskRegistererWithMocks() *taskRegistererWithMocks {
 func TestTaskRegisterer_Register(t *testing.T) {
 	registererAndMocks := newTaskRegistererWithMocks()
 	currentDate := time.Now().UTC()
-	registrationData := task.RegistrationData{
-		ID: task.ID{
+	registrationData := task2.RegistrationData{
+		ID: task2.ID{
 			ProcessID: "2",
 			TaskID:    "1",
 		},
@@ -59,15 +60,15 @@ func TestTaskRegisterer_Register(t *testing.T) {
 
 	registrationResult, err := registererAndMocks.registerer.Register(registrationData)
 	assert.NoError(t, err)
-	assert.Equal(t, task.RegistrationResultCreated, registrationResult)
+	assert.Equal(t, task2.RegistrationResultCreated, registrationResult)
 	registererAndMocks.assertExpectations(t)
 }
 
 func TestTaskRegisterer_Register_TaskAlreadyExists(t *testing.T) {
 	registererAndMocks := newTaskRegistererWithMocks()
 	currentDate := time.Now().UTC()
-	registrationData := task.RegistrationData{
-		ID: task.ID{
+	registrationData := task2.RegistrationData{
+		ID: task2.ID{
 			ProcessID: "2",
 			TaskID:    "1",
 		},
@@ -85,15 +86,15 @@ func TestTaskRegisterer_Register_TaskAlreadyExists(t *testing.T) {
 
 	registrationResult, err := registererAndMocks.registerer.Register(registrationData)
 	assert.NoError(t, err)
-	assert.Equal(t, task.RegistrationResultAlreadyRegistered, registrationResult)
+	assert.Equal(t, task2.RegistrationResultAlreadyRegistered, registrationResult)
 	registererAndMocks.assertExpectations(t)
 }
 
 func TestTaskRegisterer_Register_UnexpectedError(t *testing.T) {
 	registererAndMocks := newTaskRegistererWithMocks()
 	currentDate := time.Now().UTC()
-	registrationData := task.RegistrationData{
-		ID: task.ID{
+	registrationData := task2.RegistrationData{
+		ID: task2.ID{
 			ProcessID: "2",
 			TaskID:    "1",
 		},

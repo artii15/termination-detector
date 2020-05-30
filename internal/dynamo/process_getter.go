@@ -3,11 +3,12 @@ package dynamo
 import (
 	"fmt"
 
+	task2 "github.com/nordcloud/termination-detector/pkg/task"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
-	"github.com/nordcloud/termination-detector/internal/process"
-	"github.com/nordcloud/termination-detector/internal/task"
+	"github.com/nordcloud/termination-detector/pkg/process"
 )
 
 const (
@@ -85,14 +86,14 @@ func (getter *ProcessGetter) readNotCompletedProcess(processID string, dynamoTas
 	if err != nil {
 		return process.Process{}, err
 	}
-	if taskState == task.StateAborted {
+	if taskState == task2.StateAborted {
 		return process.Process{
 			ID:           processID,
 			State:        process.StateError,
 			StateMessage: readTaskStateMessage(dynamoTask),
 		}, nil
 	}
-	if taskState != task.StateCreated {
+	if taskState != task2.StateCreated {
 		return process.Process{}, fmt.Errorf("unexpected task state: %+v", dynamoTask)
 	}
 

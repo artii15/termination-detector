@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
+	task2 "github.com/nordcloud/termination-detector/pkg/task"
+
 	"github.com/nordcloud/termination-detector/internal/api"
-	"github.com/nordcloud/termination-detector/internal/task"
 )
 
 const (
@@ -14,10 +15,10 @@ const (
 )
 
 type PutTaskRequestHandler struct {
-	registerer task.Registerer
+	registerer task2.Registerer
 }
 
-func NewPutTaskRequestHandler(registerer task.Registerer) *PutTaskRequestHandler {
+func NewPutTaskRequestHandler(registerer task2.Registerer) *PutTaskRequestHandler {
 	return &PutTaskRequestHandler{
 		registerer: registerer,
 	}
@@ -33,8 +34,8 @@ func (handler *PutTaskRequestHandler) HandleRequest(request api.Request) (api.Re
 		}, nil
 	}
 
-	registrationResult, err := handler.registerer.Register(task.RegistrationData{
-		ID: task.ID{
+	registrationResult, err := handler.registerer.Register(task2.RegistrationData{
+		ID: task2.ID{
 			ProcessID: request.PathParameters[api.ProcessIDPathParameter],
 			TaskID:    request.PathParameters[api.TaskIDPathParameter],
 		},
@@ -48,15 +49,15 @@ func (handler *PutTaskRequestHandler) HandleRequest(request api.Request) (api.Re
 }
 
 func mapTaskRegistrationStatusToResponse(request api.Request,
-	registrationResult task.RegistrationResult) (api.Response, error) {
+	registrationResult task2.RegistrationResult) (api.Response, error) {
 	switch registrationResult {
-	case task.RegistrationResultCreated:
+	case task2.RegistrationResultCreated:
 		return api.Response{
 			StatusCode: http.StatusCreated,
 			Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeApplicationJSON},
 			Body:       request.Body,
 		}, nil
-	case task.RegistrationResultAlreadyRegistered:
+	case task2.RegistrationResultAlreadyRegistered:
 		return api.Response{
 			StatusCode: http.StatusConflict,
 			Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeTextPlain},

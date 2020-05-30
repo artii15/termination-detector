@@ -1,7 +1,5 @@
 package task
 
-import "time"
-
 type State string
 
 const (
@@ -13,11 +11,4 @@ const (
 type ID struct {
 	ProcessID string
 	TaskID    string
-}
-
-type Task struct {
-	ID
-	State          State
-	ExpirationTime time.Time
-	StateMessage   *string
 }

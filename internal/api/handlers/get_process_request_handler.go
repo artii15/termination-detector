@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/nordcloud/termination-detector/internal/process"
+	"github.com/nordcloud/termination-detector/pkg/process"
 
 	"github.com/nordcloud/termination-detector/internal/api"
 )
