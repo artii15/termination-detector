@@ -49,23 +49,23 @@ type Response struct {
 func (router *Router) Route(request Request) Response {
 	methodsHandlers, handlersForResourceExist := router.requestsHandlers[request.ResourcePath]
 	if !handlersForResourceExist {
-		return createDefaultTextResponseWithStatus(http.StatusNotFound)
+		return CreateDefaultTextResponseWithStatus(http.StatusNotFound)
 	}
 
 	requestHandler, handlerExists := methodsHandlers[request.HTTPMethod]
 	if !handlerExists {
-		return createDefaultTextResponseWithStatus(http.StatusMethodNotAllowed)
+		return CreateDefaultTextResponseWithStatus(http.StatusMethodNotAllowed)
 	}
 
 	response, err := requestHandler.HandleRequest(request)
 	if err != nil {
 		log.WithError(err).WithField("request", request).Error("failed to handle request")
-		return createDefaultTextResponseWithStatus(http.StatusInternalServerError)
+		return CreateDefaultTextResponseWithStatus(http.StatusInternalServerError)
 	}
 	return response
 }
 
-func createDefaultTextResponseWithStatus(statusCode int) Response {
+func CreateDefaultTextResponseWithStatus(statusCode int) Response {
 	return Response{
 		StatusCode: statusCode,
 		Body:       http.StatusText(statusCode),

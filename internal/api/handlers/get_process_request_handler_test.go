@@ -1,9 +1,11 @@
-package handlers
+package handlers_test
 
 import (
 	"errors"
 	"net/http"
 	"testing"
+
+	"github.com/nordcloud/termination-detector/internal/api/handlers"
 
 	"github.com/aws/aws-sdk-go/aws"
 
@@ -27,7 +29,7 @@ func (getter *processGetterMock) Get(processID string) (*process.Process, error)
 }
 
 type getProcessRequestHandlerWithMocks struct {
-	handler       *GetProcessRequestHandler
+	handler       *handlers.GetProcessRequestHandler
 	processGetter *processGetterMock
 	request       api.Request
 	processID     string
@@ -39,7 +41,7 @@ func (getterAndMocks *getProcessRequestHandlerWithMocks) assertExpectations(t *t
 
 func newGetProcessRequestHandlerWithMocks() *getProcessRequestHandlerWithMocks {
 	processGetter := new(processGetterMock)
-	handler := NewGetProcessRequestHandler(processGetter)
+	handler := handlers.NewGetProcessRequestHandler(processGetter)
 	processID := "2"
 	return &getProcessRequestHandlerWithMocks{
 		handler:       handler,

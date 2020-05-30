@@ -24,11 +24,7 @@ func (handler *GetProcessRequestHandler) HandleRequest(request api.Request) (api
 		return api.Response{}, err
 	}
 	if foundProcess == nil {
-		return api.Response{
-			StatusCode: http.StatusNotFound,
-			Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeTextPlain},
-			Body:       http.StatusText(http.StatusNotFound),
-		}, nil
+		return api.CreateDefaultTextResponseWithStatus(http.StatusNotFound), nil
 	}
 
 	return api.Response{

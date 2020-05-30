@@ -15,10 +15,6 @@ type ID struct {
 	TaskID    string
 }
 
-func (id ID) Equals(other ID) bool {
-	return id.ProcessID == other.ProcessID && id.TaskID == other.TaskID
-}
-
 type Task struct {
 	ID
 	State          State
