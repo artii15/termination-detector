@@ -24,8 +24,11 @@ const (
 	taskStateAttrAlias             = "#state"
 	taskExpirationTimeAttrAlias    = "#expirationTime"
 	taskTTLAttrAlias               = "#ttl"
+	taskStateMessageAttrAlias      = "#stateMessage"
 
-	processIDValuePlaceholder = ":processID"
+	processIDValuePlaceholder             = ":processID"
+	taskStateCreatedValuePlaceholder      = ":stateCreated"
+	taskBadStateEnterTimeValuePlaceholder = ":badStateEnterTime"
 
 	taskBadStateEnterTimeZeroValue = "0"
 )

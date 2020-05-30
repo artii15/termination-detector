@@ -23,6 +23,7 @@ type taskRegistererWithMocks struct {
 
 func (registererAndMocks *taskRegistererWithMocks) assertExpectations(t *testing.T) {
 	registererAndMocks.dynamoAPI.AssertExpectations(t)
+	registererAndMocks.currentDateGetter.AssertExpectations(t)
 }
 
 func newTaskRegistererWithMocks() *taskRegistererWithMocks {

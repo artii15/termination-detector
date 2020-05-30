@@ -13,11 +13,9 @@ import (
 )
 
 const (
-	decimalBase                           = 10
-	taskStateCreatedValuePlaceholder      = ":stateCreated"
-	taskTTLValuePlaceholder               = ":ttl"
-	taskExpirationTimeValuePlaceholder    = ":expirationTime"
-	taskBadStateEnterTimeValuePlaceholder = ":badStateEnterTime"
+	decimalBase                        = 10
+	taskTTLValuePlaceholder            = ":ttl"
+	taskExpirationTimeValuePlaceholder = ":expirationTime"
 )
 
 var (
