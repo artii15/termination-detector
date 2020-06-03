@@ -5,14 +5,12 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/nordcloud/termination-detector/internal/api/handlers"
-
 	"github.com/aws/aws-sdk-go/aws"
-
-	"github.com/stretchr/testify/assert"
-
 	"github.com/nordcloud/termination-detector/internal/api"
+	"github.com/nordcloud/termination-detector/internal/api/handlers"
+	internalHTTP "github.com/nordcloud/termination-detector/pkg/http"
 	"github.com/nordcloud/termination-detector/pkg/process"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -31,7 +29,7 @@ func (getter *processGetterMock) Get(processID string) (*process.Process, error)
 type getProcessRequestHandlerWithMocks struct {
 	handler       *handlers.GetProcessRequestHandler
 	processGetter *processGetterMock
-	request       api.Request
+	request       internalHTTP.Request
 	processID     string
 }
 
@@ -47,8 +45,8 @@ func newGetProcessRequestHandlerWithMocks() *getProcessRequestHandlerWithMocks {
 		handler:       handler,
 		processGetter: processGetter,
 		processID:     processID,
-		request: api.Request{
-			PathParameters: map[string]string{api.ProcessIDPathParameter: processID},
+		request: internalHTTP.Request{
+			PathParameters: map[internalHTTP.PathParameter]string{internalHTTP.PathParameterProcessID: processID},
 		},
 	}
 }
@@ -65,7 +63,7 @@ func TestGetProcessRequestHandler_HandleRequest(t *testing.T) {
 	response, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
 	assert.NoError(t, err)
 	handlerAndMocks.assertExpectations(t)
-	assert.Equal(t, api.Response{
+	assert.Equal(t, internalHTTP.Response{
 		StatusCode: http.StatusOK,
 		Body: api.Process{
 			ID:           foundProcess.ID,
@@ -83,7 +81,7 @@ func TestGetProcessRequestHandler_HandleRequest_ProcessNotFound(t *testing.T) {
 	response, err := handlerAndMocks.handler.HandleRequest(handlerAndMocks.request)
 	assert.NoError(t, err)
 	handlerAndMocks.assertExpectations(t)
-	assert.Equal(t, api.Response{
+	assert.Equal(t, internalHTTP.Response{
 		StatusCode: http.StatusNotFound,
 		Body:       http.StatusText(http.StatusNotFound),
 		Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeTextPlain},

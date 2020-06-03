@@ -3,9 +3,9 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/nordcloud/termination-detector/pkg/process"
-
 	"github.com/nordcloud/termination-detector/internal/api"
+	internalHTTP "github.com/nordcloud/termination-detector/pkg/http"
+	"github.com/nordcloud/termination-detector/pkg/process"
 )
 
 type GetProcessRequestHandler struct {
@@ -18,16 +18,16 @@ func NewGetProcessRequestHandler(processGetter process.Getter) *GetProcessReques
 	}
 }
 
-func (handler *GetProcessRequestHandler) HandleRequest(request api.Request) (api.Response, error) {
-	foundProcess, err := handler.processGetter.Get(request.PathParameters[api.ProcessIDPathParameter])
+func (handler *GetProcessRequestHandler) HandleRequest(request internalHTTP.Request) (internalHTTP.Response, error) {
+	foundProcess, err := handler.processGetter.Get(request.PathParameters[internalHTTP.PathParameterProcessID])
 	if err != nil {
-		return api.Response{}, err
+		return internalHTTP.Response{}, err
 	}
 	if foundProcess == nil {
 		return api.CreateDefaultTextResponseWithStatus(http.StatusNotFound), nil
 	}
 
-	return api.Response{
+	return internalHTTP.Response{
 		StatusCode: http.StatusOK,
 		Body:       api.ConvertInternalProcess(*foundProcess).JSON(),
 		Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeApplicationJSON},

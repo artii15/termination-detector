@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	task2 "github.com/nordcloud/termination-detector/pkg/task"
-
 	"github.com/nordcloud/termination-detector/internal/api"
+	internalHTTP "github.com/nordcloud/termination-detector/pkg/http"
+	"github.com/nordcloud/termination-detector/pkg/task"
 )
 
 const (
@@ -15,55 +15,55 @@ const (
 )
 
 type PutTaskRequestHandler struct {
-	registerer task2.Registerer
+	registerer task.Registerer
 }
 
-func NewPutTaskRequestHandler(registerer task2.Registerer) *PutTaskRequestHandler {
+func NewPutTaskRequestHandler(registerer task.Registerer) *PutTaskRequestHandler {
 	return &PutTaskRequestHandler{
 		registerer: registerer,
 	}
 }
 
-func (handler *PutTaskRequestHandler) HandleRequest(request api.Request) (api.Response, error) {
-	unmarshalledTask, err := api.UnmarshalTask(request.Body)
+func (handler *PutTaskRequestHandler) HandleRequest(request internalHTTP.Request) (internalHTTP.Response, error) {
+	unmarshalledTask, err := internalHTTP.UnmarshalTask(request.Body)
 	if err != nil {
-		return api.Response{
+		return internalHTTP.Response{
 			StatusCode: http.StatusBadRequest,
 			Body:       InvalidPayloadErrorMessage,
 			Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeTextPlain},
 		}, nil
 	}
 
-	registrationResult, err := handler.registerer.Register(task2.RegistrationData{
-		ID: task2.ID{
-			ProcessID: request.PathParameters[api.ProcessIDPathParameter],
-			TaskID:    request.PathParameters[api.TaskIDPathParameter],
+	registrationResult, err := handler.registerer.Register(task.RegistrationData{
+		ID: task.ID{
+			ProcessID: request.PathParameters[internalHTTP.PathParameterProcessID],
+			TaskID:    request.PathParameters[internalHTTP.PathParameterTaskID],
 		},
 		ExpirationTime: unmarshalledTask.ExpirationTime,
 	})
 	if err != nil {
-		return api.Response{}, err
+		return internalHTTP.Response{}, err
 	}
 
 	return mapTaskRegistrationStatusToResponse(request, registrationResult)
 }
 
-func mapTaskRegistrationStatusToResponse(request api.Request,
-	registrationResult task2.RegistrationResult) (api.Response, error) {
+func mapTaskRegistrationStatusToResponse(request internalHTTP.Request,
+	registrationResult task.RegistrationResult) (internalHTTP.Response, error) {
 	switch registrationResult {
-	case task2.RegistrationResultCreated:
-		return api.Response{
+	case task.RegistrationResultCreated:
+		return internalHTTP.Response{
 			StatusCode: http.StatusCreated,
 			Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeApplicationJSON},
 			Body:       request.Body,
 		}, nil
-	case task2.RegistrationResultAlreadyRegistered:
-		return api.Response{
+	case task.RegistrationResultAlreadyRegistered:
+		return internalHTTP.Response{
 			StatusCode: http.StatusConflict,
 			Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeTextPlain},
 			Body:       TaskAlreadyCreatedErrorMessage,
 		}, nil
 	default:
-		return api.Response{}, fmt.Errorf("unknown registration result: %s", registrationResult)
+		return internalHTTP.Response{}, fmt.Errorf("unknown registration result: %s", registrationResult)
 	}
 }

@@ -3,24 +3,14 @@ package api
 import (
 	"net/http"
 
+	internalHTTP "github.com/nordcloud/termination-detector/pkg/http"
 	log "github.com/sirupsen/logrus"
 )
 
-type ResourcePath string
-type HTTPMethod string
-type RequestsHandlersMap map[ResourcePath]map[HTTPMethod]RequestHandler
-
-const (
-	ResourcePathTask           ResourcePath = "/processes/{process_id}/tasks/{task_id}"
-	ResourcePathTaskCompletion ResourcePath = "/processes/{process_id}/tasks/{task_id}/completion"
-	ResourcePathProcess        ResourcePath = "/processes/{process_id}"
-
-	HTTPMethodGet HTTPMethod = http.MethodGet
-	HTTPMethodPut HTTPMethod = http.MethodPut
-)
+type RequestsHandlersMap map[internalHTTP.ResourcePath]map[internalHTTP.Method]RequestHandler
 
 type RequestHandler interface {
-	HandleRequest(request Request) (Response, error)
+	HandleRequest(request internalHTTP.Request) (internalHTTP.Response, error)
 }
 
 type Router struct {
@@ -33,26 +23,13 @@ func NewRouter(requestsHandlers RequestsHandlersMap) *Router {
 	}
 }
 
-type Request struct {
-	HTTPMethod     HTTPMethod
-	ResourcePath   ResourcePath
-	Body           string
-	PathParameters map[string]string
-}
-
-type Response struct {
-	StatusCode int
-	Body       string
-	Headers    map[string]string
-}
-
-func (router *Router) Route(request Request) Response {
+func (router *Router) Route(request internalHTTP.Request) internalHTTP.Response {
 	methodsHandlers, handlersForResourceExist := router.requestsHandlers[request.ResourcePath]
 	if !handlersForResourceExist {
 		return CreateDefaultTextResponseWithStatus(http.StatusNotFound)
 	}
 
-	requestHandler, handlerExists := methodsHandlers[request.HTTPMethod]
+	requestHandler, handlerExists := methodsHandlers[request.Method]
 	if !handlerExists {
 		return CreateDefaultTextResponseWithStatus(http.StatusMethodNotAllowed)
 	}
@@ -65,8 +42,8 @@ func (router *Router) Route(request Request) Response {
 	return response
 }
 
-func CreateDefaultTextResponseWithStatus(statusCode int) Response {
-	return Response{
+func CreateDefaultTextResponseWithStatus(statusCode int) internalHTTP.Response {
+	return internalHTTP.Response{
 		StatusCode: statusCode,
 		Body:       http.StatusText(statusCode),
 		Headers: map[string]string{

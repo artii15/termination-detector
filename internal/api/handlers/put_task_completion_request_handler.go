@@ -3,9 +3,9 @@ package handlers
 import (
 	"net/http"
 
-	task2 "github.com/nordcloud/termination-detector/pkg/task"
-
 	"github.com/nordcloud/termination-detector/internal/api"
+	internalHTTP "github.com/nordcloud/termination-detector/pkg/http"
+	"github.com/nordcloud/termination-detector/pkg/task"
 	"github.com/sirupsen/logrus"
 )
 
@@ -15,25 +15,25 @@ const (
 	UnknownErrorMsg              = "unknown error"
 )
 
-var completionStateToTaskStateMapping = map[api.CompletionState]task2.State{
-	api.CompletionStateError:     task2.StateAborted,
-	api.CompletionStateCompleted: task2.StateFinished,
+var completionStateToTaskStateMapping = map[internalHTTP.CompletionState]task.State{
+	internalHTTP.CompletionStateError:     task.StateAborted,
+	internalHTTP.CompletionStateCompleted: task.StateFinished,
 }
 
 type PutTaskCompletionRequestHandler struct {
-	completer task2.Completer
+	completer task.Completer
 }
 
-func NewPutTaskCompletionRequestHandler(completer task2.Completer) *PutTaskCompletionRequestHandler {
+func NewPutTaskCompletionRequestHandler(completer task.Completer) *PutTaskCompletionRequestHandler {
 	return &PutTaskCompletionRequestHandler{
 		completer: completer,
 	}
 }
 
-func (handler *PutTaskCompletionRequestHandler) HandleRequest(request api.Request) (api.Response, error) {
-	completion, err := api.UnmarshalCompletion(request.Body)
+func (handler *PutTaskCompletionRequestHandler) HandleRequest(request internalHTTP.Request) (internalHTTP.Response, error) {
+	completion, err := internalHTTP.UnmarshalCompletion(request.Body)
 	if err != nil {
-		return api.Response{
+		return internalHTTP.Response{
 			StatusCode: http.StatusBadRequest,
 			Body:       InvalidPayloadErrorMessage,
 			Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeTextPlain},
@@ -41,7 +41,7 @@ func (handler *PutTaskCompletionRequestHandler) HandleRequest(request api.Reques
 	}
 	taskCompletionState, isTaskCompletionStateFound := completionStateToTaskStateMapping[completion.State]
 	if !isTaskCompletionStateFound {
-		return api.Response{
+		return internalHTTP.Response{
 			StatusCode: http.StatusBadRequest,
 			Body:       UnknownCompletionStateMsg,
 			Headers: map[string]string{
@@ -50,33 +50,33 @@ func (handler *PutTaskCompletionRequestHandler) HandleRequest(request api.Reques
 		}, nil
 	}
 
-	completingResult, err := handler.completer.Complete(task2.CompleteRequest{
-		ID: task2.ID{
-			ProcessID: request.PathParameters[api.ProcessIDPathParameter],
-			TaskID:    request.PathParameters[api.TaskIDPathParameter],
+	completingResult, err := handler.completer.Complete(task.CompleteRequest{
+		ID: task.ID{
+			ProcessID: request.PathParameters[internalHTTP.PathParameterProcessID],
+			TaskID:    request.PathParameters[internalHTTP.PathParameterTaskID],
 		},
 		State:   taskCompletionState,
 		Message: completion.ErrorMessage,
 	})
 	if err != nil {
-		return api.Response{}, err
+		return internalHTTP.Response{}, err
 	}
 
 	return mapCompletingResultToResponse(request, completingResult), nil
 }
 
-func mapCompletingResultToResponse(request api.Request, result task2.CompletingResult) api.Response {
+func mapCompletingResultToResponse(request internalHTTP.Request, result task.CompletingResult) internalHTTP.Response {
 	switch result {
-	case task2.CompletingResultConflict:
-		return api.Response{
+	case task.CompletingResultConflict:
+		return internalHTTP.Response{
 			StatusCode: http.StatusConflict,
 			Body:       ConflictingTaskCompletionMsg,
 			Headers: map[string]string{
 				api.ContentTypeHeaderName: api.ContentTypeTextPlain,
 			},
 		}
-	case task2.CompletingResultCompleted:
-		return api.Response{
+	case task.CompletingResultCompleted:
+		return internalHTTP.Response{
 			StatusCode: http.StatusCreated,
 			Body:       request.Body,
 			Headers: map[string]string{
@@ -85,7 +85,7 @@ func mapCompletingResultToResponse(request api.Request, result task2.CompletingR
 		}
 	default:
 		logrus.WithField("unknown_completion_result", result).Error("unknown task completion result")
-		return api.Response{
+		return internalHTTP.Response{
 			StatusCode: http.StatusInternalServerError,
 			Body:       UnknownErrorMsg,
 			Headers: map[string]string{

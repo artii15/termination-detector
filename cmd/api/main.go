@@ -10,6 +10,7 @@ import (
 	"github.com/nordcloud/termination-detector/internal/dates"
 	"github.com/nordcloud/termination-detector/internal/dynamo"
 	"github.com/nordcloud/termination-detector/internal/env"
+	"github.com/nordcloud/termination-detector/pkg/http"
 )
 
 const (
@@ -22,11 +23,11 @@ type apiGatewayEventHandler struct {
 }
 
 func (handler *apiGatewayEventHandler) handle(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	routerRequest := api.Request{
-		HTTPMethod:     api.HTTPMethod(request.HTTPMethod),
-		ResourcePath:   api.ResourcePath(request.Resource),
+	routerRequest := http.Request{
+		Method:         http.Method(request.HTTPMethod),
+		ResourcePath:   http.ResourcePath(request.Resource),
 		Body:           request.Body,
-		PathParameters: request.PathParameters,
+		PathParameters: readPathParameters(request.PathParameters),
 	}
 	response := handler.router.Route(routerRequest)
 	return events.APIGatewayProxyResponse{
@@ -34,6 +35,14 @@ func (handler *apiGatewayEventHandler) handle(request events.APIGatewayProxyRequ
 		Headers:    response.Headers,
 		Body:       response.Body,
 	}, nil
+}
+
+func readPathParameters(parameters map[string]string) map[http.PathParameter]string {
+	pathParameters := make(map[http.PathParameter]string)
+	for parameterName, parameterValue := range parameters {
+		pathParameters[http.PathParameter(parameterName)] = parameterValue
+	}
+	return pathParameters
 }
 
 func main() {
@@ -52,15 +61,15 @@ func main() {
 	putTaskCompletionRequestHandler := handlers.NewPutTaskCompletionRequestHandler(taskCompleter)
 	processGetter := dynamo.NewProcessGetter(dynamoAPI, tasksTableName, currentDateGetter)
 	getProcessRequestHandler := handlers.NewGetProcessRequestHandler(processGetter)
-	router := api.NewRouter(map[api.ResourcePath]map[api.HTTPMethod]api.RequestHandler{
-		api.ResourcePathTask: {
-			api.HTTPMethodPut: putTaskRequestHandler,
+	router := api.NewRouter(map[http.ResourcePath]map[http.Method]api.RequestHandler{
+		http.ResourcePathTask: {
+			http.MethodPut: putTaskRequestHandler,
 		},
-		api.ResourcePathTaskCompletion: {
-			api.HTTPMethodPut: putTaskCompletionRequestHandler,
+		http.ResourcePathTaskCompletion: {
+			http.MethodPut: putTaskCompletionRequestHandler,
 		},
-		api.ResourcePathProcess: {
-			api.HTTPMethodGet: getProcessRequestHandler,
+		http.ResourcePathProcess: {
+			http.MethodGet: getProcessRequestHandler,
 		},
 	})
 	handler := apiGatewayEventHandler{router: router}

@@ -1,15 +1,12 @@
-package api
+package http
 
 import (
 	"encoding/json"
 	"time"
 
-	"github.com/pkg/errors"
-)
+	"github.com/nordcloud/termination-detector/pkg/task"
 
-const (
-	ProcessIDPathParameter = "process_id"
-	TaskIDPathParameter    = "task_id"
+	"github.com/pkg/errors"
 )
 
 type Task struct {
@@ -35,6 +32,11 @@ const (
 	CompletionStateError     CompletionState = "ERROR"
 	CompletionStateCompleted CompletionState = "COMPLETED"
 )
+
+var taskStateToCompletionStateMapping = map[task.State]CompletionState{
+	task.StateAborted:  CompletionStateError,
+	task.StateFinished: CompletionStateCompleted,
+}
 
 type Completion struct {
 	State        CompletionState `json:"state"`
