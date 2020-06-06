@@ -25,7 +25,7 @@ var (
 		taskStateMessageAttrAlias, newTaskStateMessageValuePlaceholder,
 		taskBadStateEnterTimeAttrAlias, taskBadStateEnterTimeValuePlaceholder)
 	completeTaskConditionExpr = fmt.Sprintf("attribute_exists(%s) and attribute_exists(%s) and %s > %s and %s = %s",
-		processIDAttrAlias, taskIDAttrAlias, taskExpirationTimeAttrAlias, currentTimeValuePlaceholder,
+		ProcessIDAttrAlias, taskIDAttrAlias, taskExpirationTimeAttrAlias, currentTimeValuePlaceholder,
 		taskStateAttrAlias, taskStateCreatedValuePlaceholder)
 )
 
@@ -88,8 +88,8 @@ func BuildCompleteTaskUpdateItemInput(tableName string, completeTaskRequest Comp
 	return &dynamodb.UpdateItemInput{
 		ConditionExpression: &completeTaskConditionExpr,
 		ExpressionAttributeNames: map[string]*string{
-			processIDAttrAlias:             aws.String(ProcessIDAttrName),
-			taskIDAttrAlias:                aws.String(taskIDAttrName),
+			ProcessIDAttrAlias:             aws.String(ProcessIDAttrName),
+			taskIDAttrAlias:                aws.String(TaskIDAttrName),
 			taskExpirationTimeAttrAlias:    aws.String(taskExpirationTimeAttrName),
 			taskStateAttrAlias:             aws.String(TaskStateAttrName),
 			taskStateMessageAttrAlias:      aws.String(TaskStateMessageAttrName),
@@ -98,7 +98,7 @@ func BuildCompleteTaskUpdateItemInput(tableName string, completeTaskRequest Comp
 		ExpressionAttributeValues: expressionAttributeValues,
 		Key: map[string]*dynamodb.AttributeValue{
 			ProcessIDAttrName: {S: &completeTaskRequest.ProcessID},
-			taskIDAttrName:    {S: &completeTaskRequest.TaskID},
+			TaskIDAttrName:    {S: &completeTaskRequest.TaskID},
 		},
 		TableName:        &tableName,
 		UpdateExpression: &completeTaskUpdateExpr,

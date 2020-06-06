@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -32,11 +33,18 @@ func (modifier *IAMAuthorizingModifier) ModifyRequest(request *http.Request) err
 }
 
 func (modifier *IAMAuthorizingModifier) signRequest(request *http.Request) error {
-	requestContent, err := ioutil.ReadAll(request.Body)
+	requestContent, err := readRequestBody(request.Body)
 	if err != nil {
 		return err
 	}
 	_, err = modifier.signer.Sign(request, bytes.NewReader(requestContent),
 		apiGatewaySvcNameForSignature, modifier.signatureRegion, time.Now().UTC())
 	return err
+}
+
+func readRequestBody(requestBody io.ReadCloser) ([]byte, error) {
+	if requestBody == nil {
+		return nil, nil
+	}
+	return ioutil.ReadAll(requestBody)
 }

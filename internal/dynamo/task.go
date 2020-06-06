@@ -11,14 +11,14 @@ import (
 
 const (
 	ProcessIDAttrName             = "process_id"
-	taskIDAttrName                = "task_id"
+	TaskIDAttrName                = "task_id"
 	TaskBadStateEnterTimeAttrName = "bad_state_enter_time"
 	TaskStateAttrName             = "state"
 	TaskStateMessageAttrName      = "state_message"
 	taskExpirationTimeAttrName    = "expiration_time"
 	taskTTLAttributeName          = "ttl"
 
-	processIDAttrAlias             = "#processID"
+	ProcessIDAttrAlias             = "#processID"
 	taskIDAttrAlias                = "#taskID"
 	taskBadStateEnterTimeAttrAlias = "#badStateEnterTime"
 	taskStateAttrAlias             = "#state"
@@ -26,7 +26,7 @@ const (
 	taskTTLAttrAlias               = "#ttl"
 	taskStateMessageAttrAlias      = "#stateMessage"
 
-	processIDValuePlaceholder             = ":processID"
+	ProcessIDValuePlaceholder             = ":processID"
 	taskStateCreatedValuePlaceholder      = ":stateCreated"
 	taskBadStateEnterTimeValuePlaceholder = ":badStateEnterTime"
 

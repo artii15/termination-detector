@@ -14,14 +14,19 @@ type RequestModifier interface {
 	ModifyRequest(request *http.Request) error
 }
 
+type HTTPRequestDoer interface {
+	Do(request *http.Request) (*http.Response, error)
+}
+
 type Client struct {
-	client           *http.Client
+	requestDoer      HTTPRequestDoer
 	baseURL          string
 	requestModifiers []RequestModifier
 }
 
-func New(baseURL string, requestModifiers ...RequestModifier) *Client {
+func New(httpRequestDoer HTTPRequestDoer, baseURL string, requestModifiers ...RequestModifier) *Client {
 	return &Client{
+		requestDoer:      httpRequestDoer,
 		baseURL:          baseURL,
 		requestModifiers: requestModifiers,
 	}
@@ -43,7 +48,7 @@ func (executor *Client) ExecuteRequest(request internalHTTP.Request) (internalHT
 		}
 	}
 
-	response, err := executor.client.Do(httpRequest)
+	response, err := executor.requestDoer.Do(httpRequest)
 	if err != nil {
 		return internalHTTP.Response{}, errors.Wrapf(err, "failed to execute request: %+v", request)
 	}

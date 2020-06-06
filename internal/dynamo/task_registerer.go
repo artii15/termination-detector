@@ -21,7 +21,7 @@ const (
 
 var (
 	registerTaskConditionExpr = fmt.Sprintf("attribute_not_exists(%s) and attribute_not_exists(%s)",
-		processIDAttrAlias, taskIDAttrAlias)
+		ProcessIDAttrAlias, taskIDAttrAlias)
 	registerTaskUpdateExpr = fmt.Sprintf(`SET %s = %s, %s = %s, %s = %s, %s = %s`,
 		taskExpirationTimeAttrAlias, taskExpirationTimeValuePlaceholder, taskStateAttrAlias, taskStateCreatedValuePlaceholder,
 		taskTTLAttrAlias, taskTTLValuePlaceholder, taskBadStateEnterTimeAttrAlias, taskBadStateEnterTimeValuePlaceholder)
@@ -81,8 +81,8 @@ func BuildRegisterTaskUpdateItemInput(tableName string, taskToRegister TaskToReg
 	return &dynamodb.UpdateItemInput{
 		ConditionExpression: &registerTaskConditionExpr,
 		ExpressionAttributeNames: map[string]*string{
-			processIDAttrAlias:             aws.String(ProcessIDAttrName),
-			taskIDAttrAlias:                aws.String(taskIDAttrName),
+			ProcessIDAttrAlias:             aws.String(ProcessIDAttrName),
+			taskIDAttrAlias:                aws.String(TaskIDAttrName),
 			taskStateAttrAlias:             aws.String(TaskStateAttrName),
 			taskExpirationTimeAttrAlias:    aws.String(taskExpirationTimeAttrName),
 			taskTTLAttrAlias:               aws.String(taskTTLAttributeName),
@@ -98,7 +98,7 @@ func BuildRegisterTaskUpdateItemInput(tableName string, taskToRegister TaskToReg
 		TableName:        &tableName,
 		Key: map[string]*dynamodb.AttributeValue{
 			ProcessIDAttrName: {S: &taskToRegister.RegistrationData.ID.ProcessID},
-			taskIDAttrName:    {S: &taskToRegister.RegistrationData.ID.TaskID},
+			TaskIDAttrName:    {S: &taskToRegister.RegistrationData.ID.TaskID},
 		},
 	}
 }

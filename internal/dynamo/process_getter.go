@@ -17,9 +17,9 @@ const (
 )
 
 var (
-	queryProcExistsKeyCondExpression = fmt.Sprintf("%s = %s", processIDAttrAlias, processIDValuePlaceholder)
-	queryGetProcessKeyCondExpression = fmt.Sprintf("%s = %s and %s > %s", processIDAttrAlias,
-		processIDValuePlaceholder, taskBadStateEnterTimeAttrAlias, taskBadStateEnterTimeZeroValuePlaceholder)
+	queryProcExistsKeyCondExpression = fmt.Sprintf("%s = %s", ProcessIDAttrAlias, ProcessIDValuePlaceholder)
+	queryGetProcessKeyCondExpression = fmt.Sprintf("%s = %s and %s > %s", ProcessIDAttrAlias,
+		ProcessIDValuePlaceholder, taskBadStateEnterTimeAttrAlias, taskBadStateEnterTimeZeroValuePlaceholder)
 )
 
 type ProcessGetter struct {
@@ -58,10 +58,10 @@ func BuildCheckIfProcessExistsQueryInput(tableName, processID string) *dynamodb.
 	return &dynamodb.QueryInput{
 		ConsistentRead: aws.Bool(true),
 		ExpressionAttributeNames: map[string]*string{
-			processIDAttrAlias: aws.String(ProcessIDAttrName),
+			ProcessIDAttrAlias: aws.String(ProcessIDAttrName),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			processIDValuePlaceholder: {S: &processID},
+			ProcessIDValuePlaceholder: {S: &processID},
 		},
 		KeyConditionExpression: &queryProcExistsKeyCondExpression,
 		Limit:                  aws.Int64(1),
@@ -122,11 +122,11 @@ func BuildGetProcessQueryInput(tableName, processID string) *dynamodb.QueryInput
 	return &dynamodb.QueryInput{
 		ConsistentRead: aws.Bool(true),
 		ExpressionAttributeNames: map[string]*string{
-			processIDAttrAlias:             aws.String(processIDValuePlaceholder),
+			ProcessIDAttrAlias:             aws.String(ProcessIDValuePlaceholder),
 			taskBadStateEnterTimeAttrAlias: aws.String(TaskBadStateEnterTimeAttrName),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			processIDValuePlaceholder:                 {S: &processID},
+			ProcessIDValuePlaceholder:                 {S: &processID},
 			taskBadStateEnterTimeZeroValuePlaceholder: {S: aws.String(taskBadStateEnterTimeZeroValue)},
 		},
 		IndexName:              aws.String(taskBadStateEnterTimeIndex),
