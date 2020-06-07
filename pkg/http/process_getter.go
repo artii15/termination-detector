@@ -18,7 +18,7 @@ func NewProcessGetter(requestExecutor requestExecutor) *ProcessGetter {
 	}
 }
 
-func (getter *ProcessGetter) Get(processID string) (proc *process.Process, err error) {
+func (getter *ProcessGetter) Get(processID string) (*process.Process, error) {
 	response, err := getter.requestExecutor.ExecuteRequest(Request{
 		Method:       MethodGet,
 		ResourcePath: ResourcePathProcess,
@@ -27,11 +27,13 @@ func (getter *ProcessGetter) Get(processID string) (proc *process.Process, err e
 		},
 	})
 	if err != nil || response.StatusCode == http.StatusNotFound {
-		return proc, err
+		return nil, err
 	}
 	if response.StatusCode != http.StatusOK {
-		return proc, fmt.Errorf("unexpected error occurred: %d %s", response.StatusCode, response.Body)
+		return nil, fmt.Errorf("unexpected error occurred: %d %s", response.StatusCode, response.Body)
 	}
-	err = json.Unmarshal([]byte(response.Body), proc)
-	return proc, err
+
+	var proc Process
+	err = json.Unmarshal([]byte(response.Body), &proc)
+	return proc.optionalInternalProcess(), err
 }

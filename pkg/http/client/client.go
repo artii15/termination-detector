@@ -1,10 +1,7 @@
 package client
 
 import (
-	"io"
-	"io/ioutil"
 	"net/http"
-	"strings"
 
 	internalHTTP "github.com/nordcloud/termination-detector/pkg/http"
 	"github.com/pkg/errors"
@@ -12,6 +9,10 @@ import (
 
 type RequestModifier interface {
 	ModifyRequest(request *http.Request) error
+}
+
+type RequestToNativeConverter interface {
+	ConvertRequestToNative()
 }
 
 type HTTPRequestDoer interface {
@@ -33,22 +34,30 @@ func New(httpRequestDoer HTTPRequestDoer, baseURL string, requestModifiers ...Re
 }
 
 func (executor *Client) ExecuteRequest(request internalHTTP.Request) (internalHTTP.Response, error) {
-	var payloadReader io.Reader
-	if len(request.Body) > 0 {
-		payloadReader = strings.NewReader(request.Body)
-	}
-	httpRequest, err := http.NewRequest(string(request.Method), request.FullURL(executor.baseURL), payloadReader)
+	httpRequest, err := executor.buildHTTPRequest(request)
 	if err != nil {
-		return internalHTTP.Response{}, errors.Wrapf(err, "failed to build request: %+v", request)
+		return internalHTTP.Response{}, err
+	}
+
+	return executor.executeNativeRequest(httpRequest)
+}
+
+func (executor *Client) buildHTTPRequest(request internalHTTP.Request) (*http.Request, error) {
+	httpRequest, err := InternalRequestToNative(executor.baseURL, request)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to convert request: %+v", request)
 	}
 
 	for _, requestModifier := range executor.requestModifiers {
 		if err := requestModifier.ModifyRequest(httpRequest); err != nil {
-			return internalHTTP.Response{}, errors.Wrapf(err, "failed to build request: %+v", request)
+			return nil, errors.Wrapf(err, "failed to modify request: %+v", httpRequest)
 		}
 	}
+	return httpRequest, nil
+}
 
-	response, err := executor.requestDoer.Do(httpRequest)
+func (executor *Client) executeNativeRequest(request *http.Request) (internalHTTP.Response, error) {
+	response, err := executor.requestDoer.Do(request)
 	if err != nil {
 		return internalHTTP.Response{}, errors.Wrapf(err, "failed to execute request: %+v", request)
 	}
@@ -61,20 +70,4 @@ func (executor *Client) ExecuteRequest(request internalHTTP.Request) (internalHT
 		Body:       responseBody,
 		Headers:    readHeaders(response.Header),
 	}, nil
-}
-
-func readHeaders(header http.Header) (headers map[string]string) {
-	headers = make(map[string]string)
-	for headerName := range header {
-		headers[headerName] = header.Get(headerName)
-	}
-	return headers
-}
-
-func readResponseBody(body io.ReadCloser) (string, error) {
-	responseBytes, err := ioutil.ReadAll(body)
-	if err != nil {
-		return "", err
-	}
-	return string(responseBytes), nil
 }

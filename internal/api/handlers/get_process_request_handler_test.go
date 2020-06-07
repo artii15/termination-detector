@@ -65,7 +65,7 @@ func TestGetProcessRequestHandler_HandleRequest(t *testing.T) {
 	handlerAndMocks.assertExpectations(t)
 	assert.Equal(t, internalHTTP.Response{
 		StatusCode: http.StatusOK,
-		Body: api.Process{
+		Body: internalHTTP.Process{
 			ID:           foundProcess.ID,
 			State:        foundProcess.State,
 			StateMessage: foundProcess.StateMessage,

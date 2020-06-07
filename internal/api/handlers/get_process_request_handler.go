@@ -29,7 +29,15 @@ func (handler *GetProcessRequestHandler) HandleRequest(request internalHTTP.Requ
 
 	return internalHTTP.Response{
 		StatusCode: http.StatusOK,
-		Body:       api.ConvertInternalProcess(*foundProcess).JSON(),
+		Body:       internalToHTTPProcess(*foundProcess).JSON(),
 		Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeApplicationJSON},
 	}, nil
+}
+
+func internalToHTTPProcess(proc process.Process) internalHTTP.Process {
+	return internalHTTP.Process{
+		ID:           proc.ID,
+		State:        proc.State,
+		StateMessage: proc.StateMessage,
+	}
 }
