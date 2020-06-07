@@ -122,7 +122,7 @@ func BuildGetProcessQueryInput(tableName, processID string) *dynamodb.QueryInput
 	return &dynamodb.QueryInput{
 		ConsistentRead: aws.Bool(true),
 		ExpressionAttributeNames: map[string]*string{
-			ProcessIDAttrAlias:             aws.String(ProcessIDValuePlaceholder),
+			ProcessIDAttrAlias:             aws.String(ProcessIDAttrName),
 			taskBadStateEnterTimeAttrAlias: aws.String(TaskBadStateEnterTimeAttrName),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{

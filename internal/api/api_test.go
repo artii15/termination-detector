@@ -6,6 +6,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/nordcloud/termination-detector/pkg/process"
+
+	"github.com/nordcloud/termination-detector/pkg/task"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -56,6 +60,126 @@ func TestUsingAWSIAMAuthorizedSDK(t *testing.T) {
 		proc, err := terminationDetectorSDK.Get(testProcessID)
 		assert.NoError(t, err)
 		assert.Nil(t, proc)
+	})
+
+	task1ID := "1"
+	task2ID := "2"
+	t.Run("each task can be registered only once", func(t *testing.T) {
+		registrationResult, err := terminationDetectorSDK.Register(task.RegistrationData{
+			ID: task.ID{
+				ProcessID: testProcessID,
+				TaskID:    task1ID,
+			},
+			ExpirationTime: time.Now().Add(time.Hour),
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, task.RegistrationResultCreated, registrationResult)
+
+		registrationResult, err = terminationDetectorSDK.Register(task.RegistrationData{
+			ID: task.ID{
+				ProcessID: testProcessID,
+				TaskID:    task2ID,
+			},
+			ExpirationTime: time.Now().Add(time.Hour),
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, task.RegistrationResultCreated, registrationResult)
+
+		registrationResult, err = terminationDetectorSDK.Register(task.RegistrationData{
+			ID: task.ID{
+				ProcessID: testProcessID,
+				TaskID:    task1ID,
+			},
+			ExpirationTime: time.Now().Add(time.Hour),
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, task.RegistrationResultAlreadyRegistered, registrationResult)
+	})
+	t.Run("process is completed only when all tasks are completed", func(t *testing.T) {
+		proc, err := terminationDetectorSDK.Get(testProcessID)
+		assert.NoError(t, err)
+		assert.NotNil(t, proc)
+		assert.Equal(t, process.StateCreated, proc.State)
+
+		completeResult, err := terminationDetectorSDK.Complete(task.CompleteRequest{
+			ID: task.ID{
+				ProcessID: testProcessID,
+				TaskID:    task1ID,
+			},
+			State: task.StateFinished,
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, task.CompletingResultCompleted, completeResult)
+
+		proc, err = terminationDetectorSDK.Get(testProcessID)
+		assert.NoError(t, err)
+		assert.NotNil(t, proc)
+		assert.Equal(t, process.StateCreated, proc.State)
+
+		completeResult, err = terminationDetectorSDK.Complete(task.CompleteRequest{
+			ID: task.ID{
+				ProcessID: testProcessID,
+				TaskID:    task2ID,
+			},
+			State: task.StateFinished,
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, task.CompletingResultCompleted, completeResult)
+
+		proc, err = terminationDetectorSDK.Get(testProcessID)
+		assert.NoError(t, err)
+		assert.NotNil(t, proc)
+		assert.Equal(t, process.StateCompleted, proc.State)
+	})
+
+	task3ID := "3"
+	t.Run("process fails if at least one task fails", func(t *testing.T) {
+		registrationStatus, err := terminationDetectorSDK.Register(task.RegistrationData{
+			ID: task.ID{
+				ProcessID: testProcessID,
+				TaskID:    task3ID,
+			},
+			ExpirationTime: time.Now().Add(time.Hour),
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, task.RegistrationResultCreated, registrationStatus)
+
+		failureReason := "failure"
+		completeResult, err := terminationDetectorSDK.Complete(task.CompleteRequest{
+			ID: task.ID{
+				ProcessID: testProcessID,
+				TaskID:    task3ID,
+			},
+			State:   task.StateAborted,
+			Message: &failureReason,
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, task.CompletingResultCompleted, completeResult)
+
+		proc, err := terminationDetectorSDK.Get(testProcessID)
+		assert.NoError(t, err)
+		assert.NotNil(t, proc)
+		assert.Equal(t, process.StateError, proc.State)
+		assert.Equal(t, &failureReason, proc.StateMessage)
+	})
+
+	task4ID := "4"
+	t.Run("process fails if task times out", func(t *testing.T) {
+		registrationStatus, err := terminationDetectorSDK.Register(task.RegistrationData{
+			ID: task.ID{
+				ProcessID: testProcessID,
+				TaskID:    task4ID,
+			},
+			ExpirationTime: time.Now().Add(-time.Hour * 24),
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, task.RegistrationResultCreated, registrationStatus)
+
+		proc, err := terminationDetectorSDK.Get(testProcessID)
+		assert.NoError(t, err)
+		assert.NotNil(t, proc)
+		assert.Equal(t, process.StateError, proc.State)
+		assert.NotEmpty(t, proc.StateMessage)
 	})
 }
 
