@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/nordcloud/termination-detector/internal/api"
 	"github.com/nordcloud/termination-detector/internal/api/handlers"
 	internalHTTP "github.com/nordcloud/termination-detector/pkg/http"
 	"github.com/nordcloud/termination-detector/pkg/task"
@@ -69,7 +68,7 @@ func TestPutTaskCompletionRequestHandler_HandleRequest(t *testing.T) {
 	assert.Equal(t, internalHTTP.Response{
 		StatusCode: http.StatusCreated,
 		Body:       handlerAndMocks.request.Body,
-		Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeApplicationJSON},
+		Headers:    map[string]string{internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeApplicationJSON},
 	}, response)
 }
 
@@ -83,7 +82,7 @@ func TestPutTaskCompletionRequestHandler_HandleRequest_InvalidPayload(t *testing
 	assert.Equal(t, internalHTTP.Response{
 		StatusCode: http.StatusBadRequest,
 		Body:       handlers.InvalidPayloadErrorMessage,
-		Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeTextPlain},
+		Headers:    map[string]string{internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeTextPlain},
 	}, response)
 }
 
@@ -98,7 +97,7 @@ func TestPutTaskCompletionRequestHandler_HandleRequest_UnknownCompletionState(t 
 	assert.Equal(t, internalHTTP.Response{
 		StatusCode: http.StatusBadRequest,
 		Body:       handlers.UnknownCompletionStateMsg,
-		Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeTextPlain},
+		Headers:    map[string]string{internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeTextPlain},
 	}, response)
 }
 
@@ -118,7 +117,7 @@ func TestPutTaskCompletionRequestHandler_HandleRequest_CompleteWithError(t *test
 	assert.Equal(t, internalHTTP.Response{
 		StatusCode: http.StatusCreated,
 		Body:       handlerAndMocks.request.Body,
-		Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeApplicationJSON},
+		Headers:    map[string]string{internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeApplicationJSON},
 	}, response)
 }
 
@@ -136,7 +135,7 @@ func TestPutTaskCompletionRequestHandler_HandleRequest_TaskStateConflict(t *test
 	assert.Equal(t, internalHTTP.Response{
 		StatusCode: http.StatusConflict,
 		Body:       handlers.ConflictingTaskCompletionMsg,
-		Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeTextPlain},
+		Headers:    map[string]string{internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeTextPlain},
 	}, response)
 }
 
@@ -154,7 +153,7 @@ func TestPutTaskCompletionRequestHandler_HandleRequest_UnknownCompletionResult(t
 	assert.Equal(t, internalHTTP.Response{
 		StatusCode: http.StatusInternalServerError,
 		Body:       handlers.UnknownErrorMsg,
-		Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeTextPlain},
+		Headers:    map[string]string{internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeTextPlain},
 	}, response)
 }
 

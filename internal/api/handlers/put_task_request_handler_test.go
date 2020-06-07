@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nordcloud/termination-detector/internal/api"
 	"github.com/nordcloud/termination-detector/internal/api/handlers"
 	internalHTTP "github.com/nordcloud/termination-detector/pkg/http"
 	"github.com/nordcloud/termination-detector/pkg/task"
@@ -73,7 +72,7 @@ func TestPutTaskRequestHandler_HandleRequest_TaskCreated(t *testing.T) {
 	assert.Equal(t, internalHTTP.Response{
 		StatusCode: http.StatusCreated,
 		Headers: map[string]string{
-			api.ContentTypeHeaderName: api.ContentTypeApplicationJSON,
+			internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeApplicationJSON,
 		},
 		Body: handlerAndMocks.request.Body,
 	}, response)
@@ -91,7 +90,7 @@ func TestPutTaskRequestHandler_HandleRequest_DuplicatedLastTask(t *testing.T) {
 	assert.Equal(t, internalHTTP.Response{
 		StatusCode: http.StatusConflict,
 		Headers: map[string]string{
-			api.ContentTypeHeaderName: api.ContentTypeTextPlain,
+			internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeTextPlain,
 		},
 		Body: handlers.TaskAlreadyCreatedErrorMessage,
 	}, response)
@@ -129,7 +128,7 @@ func TestPutTaskRequestHandler_HandleRequest_InvalidBody(t *testing.T) {
 		StatusCode: http.StatusBadRequest,
 		Body:       handlers.InvalidPayloadErrorMessage,
 		Headers: map[string]string{
-			api.ContentTypeHeaderName: api.ContentTypeTextPlain,
+			internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeTextPlain,
 		},
 	}, response)
 }

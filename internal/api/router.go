@@ -47,7 +47,7 @@ func CreateDefaultTextResponseWithStatus(statusCode int) internalHTTP.Response {
 		StatusCode: statusCode,
 		Body:       http.StatusText(statusCode),
 		Headers: map[string]string{
-			ContentTypeHeaderName: ContentTypeTextPlain,
+			internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeTextPlain,
 		},
 	}
 }

@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nordcloud/termination-detector/internal/api"
 	internalHTTP "github.com/nordcloud/termination-detector/pkg/http"
 	"github.com/nordcloud/termination-detector/pkg/http/client"
 	"github.com/nordcloud/termination-detector/pkg/process"
@@ -81,7 +80,7 @@ func TestClient_ExecuteRequest(t *testing.T) {
 	nativeResponse := &http.Response{
 		Status:     http.StatusText(http.StatusOK),
 		StatusCode: http.StatusOK,
-		Header:     map[string][]string{api.ContentTypeHeaderName: {api.ContentTypeApplicationJSON}},
+		Header:     map[string][]string{internalHTTP.ContentTypeHeaderName: {internalHTTP.ContentTypeApplicationJSON}},
 		Body:       ioutil.NopCloser(strings.NewReader(returnedProcessJSON)),
 	}
 	clientAndMocks.requestDoer.On("Do", nativeRequest).Return(nativeResponse, nil)
@@ -91,7 +90,7 @@ func TestClient_ExecuteRequest(t *testing.T) {
 	assert.Equal(t, internalHTTP.Response{
 		StatusCode: nativeResponse.StatusCode,
 		Body:       returnedProcessJSON,
-		Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeApplicationJSON},
+		Headers:    map[string]string{internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeApplicationJSON},
 	}, response)
 	clientAndMocks.assertExpectations(t)
 }
@@ -114,7 +113,7 @@ func TestClient_ExecuteRequest_NoResponseBody(t *testing.T) {
 	nativeResponse := &http.Response{
 		Status:     http.StatusText(http.StatusNotFound),
 		StatusCode: http.StatusNotFound,
-		Header:     map[string][]string{api.ContentTypeHeaderName: {api.ContentTypeTextPlain}},
+		Header:     map[string][]string{internalHTTP.ContentTypeHeaderName: {internalHTTP.ContentTypeTextPlain}},
 		Body:       nil,
 	}
 	clientAndMocks.requestDoer.On("Do", nativeRequest).Return(nativeResponse, nil)
@@ -124,7 +123,7 @@ func TestClient_ExecuteRequest_NoResponseBody(t *testing.T) {
 	assert.Equal(t, internalHTTP.Response{
 		StatusCode: nativeResponse.StatusCode,
 		Body:       "",
-		Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeTextPlain},
+		Headers:    map[string]string{internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeTextPlain},
 	}, response)
 	clientAndMocks.assertExpectations(t)
 }
@@ -161,7 +160,7 @@ func TestClient_ExecuteRequest_RequestWithPayload(t *testing.T) {
 	nativeResponse := &http.Response{
 		Status:     http.StatusText(http.StatusCreated),
 		StatusCode: http.StatusCreated,
-		Header:     map[string][]string{api.ContentTypeHeaderName: {api.ContentTypeApplicationJSON}},
+		Header:     map[string][]string{internalHTTP.ContentTypeHeaderName: {internalHTTP.ContentTypeApplicationJSON}},
 		Body:       responseBody,
 	}
 	clientAndMocks.requestDoer.On("Do", mock.MatchedBy(func(httpRequest *http.Request) bool {
@@ -173,7 +172,7 @@ func TestClient_ExecuteRequest_RequestWithPayload(t *testing.T) {
 	assert.Equal(t, internalHTTP.Response{
 		StatusCode: nativeResponse.StatusCode,
 		Body:       taskRegistrationData.JSON(),
-		Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeApplicationJSON},
+		Headers:    map[string]string{internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeApplicationJSON},
 	}, response)
 	clientAndMocks.assertExpectations(t)
 }
@@ -237,7 +236,7 @@ func TestClient_ExecuteRequest_DoerError(t *testing.T) {
 	nativeResponse := &http.Response{
 		Status:     http.StatusText(http.StatusOK),
 		StatusCode: http.StatusOK,
-		Header:     map[string][]string{api.ContentTypeHeaderName: {api.ContentTypeApplicationJSON}},
+		Header:     map[string][]string{internalHTTP.ContentTypeHeaderName: {internalHTTP.ContentTypeApplicationJSON}},
 		Body:       ioutil.NopCloser(strings.NewReader(returnedProcessJSON)),
 	}
 	clientAndMocks.requestDoer.On("Do", nativeRequest).Return(nativeResponse, errors.New("error"))

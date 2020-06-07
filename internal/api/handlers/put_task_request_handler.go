@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/nordcloud/termination-detector/internal/api"
 	internalHTTP "github.com/nordcloud/termination-detector/pkg/http"
 	"github.com/nordcloud/termination-detector/pkg/task"
 )
@@ -30,7 +29,7 @@ func (handler *PutTaskRequestHandler) HandleRequest(request internalHTTP.Request
 		return internalHTTP.Response{
 			StatusCode: http.StatusBadRequest,
 			Body:       InvalidPayloadErrorMessage,
-			Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeTextPlain},
+			Headers:    map[string]string{internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeTextPlain},
 		}, nil
 	}
 
@@ -54,13 +53,13 @@ func mapTaskRegistrationStatusToResponse(request internalHTTP.Request,
 	case task.RegistrationResultCreated:
 		return internalHTTP.Response{
 			StatusCode: http.StatusCreated,
-			Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeApplicationJSON},
+			Headers:    map[string]string{internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeApplicationJSON},
 			Body:       request.Body,
 		}, nil
 	case task.RegistrationResultAlreadyRegistered:
 		return internalHTTP.Response{
 			StatusCode: http.StatusConflict,
-			Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeTextPlain},
+			Headers:    map[string]string{internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeTextPlain},
 			Body:       TaskAlreadyCreatedErrorMessage,
 		}, nil
 	default:

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/nordcloud/termination-detector/internal/api"
 	"github.com/nordcloud/termination-detector/internal/api/handlers"
 	internalHTTP "github.com/nordcloud/termination-detector/pkg/http"
 	"github.com/nordcloud/termination-detector/pkg/process"
@@ -70,7 +69,7 @@ func TestGetProcessRequestHandler_HandleRequest(t *testing.T) {
 			State:        foundProcess.State,
 			StateMessage: foundProcess.StateMessage,
 		}.JSON(),
-		Headers: map[string]string{api.ContentTypeHeaderName: api.ContentTypeApplicationJSON},
+		Headers: map[string]string{internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeApplicationJSON},
 	}, response)
 }
 
@@ -84,7 +83,7 @@ func TestGetProcessRequestHandler_HandleRequest_ProcessNotFound(t *testing.T) {
 	assert.Equal(t, internalHTTP.Response{
 		StatusCode: http.StatusNotFound,
 		Body:       http.StatusText(http.StatusNotFound),
-		Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeTextPlain},
+		Headers:    map[string]string{internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeTextPlain},
 	}, response)
 }
 

@@ -36,3 +36,11 @@ func (proc Process) internalProcess() process.Process {
 		StateMessage: proc.StateMessage,
 	}
 }
+
+func ConvertInternalToHTTPProcess(proc process.Process) Process {
+	return Process{
+		ID:           proc.ID,
+		State:        proc.State,
+		StateMessage: proc.StateMessage,
+	}
+}

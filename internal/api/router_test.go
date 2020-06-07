@@ -69,7 +69,7 @@ func TestRouter_Route_UnknownResource(t *testing.T) {
 		StatusCode: http.StatusNotFound,
 		Body:       http.StatusText(http.StatusNotFound),
 		Headers: map[string]string{
-			api.ContentTypeHeaderName: api.ContentTypeTextPlain,
+			http2.ContentTypeHeaderName: http2.ContentTypeTextPlain,
 		},
 	}
 
@@ -88,7 +88,7 @@ func TestRouter_Route_UnknownMethod(t *testing.T) {
 		StatusCode: http.StatusMethodNotAllowed,
 		Body:       http.StatusText(http.StatusMethodNotAllowed),
 		Headers: map[string]string{
-			api.ContentTypeHeaderName: api.ContentTypeTextPlain,
+			http2.ContentTypeHeaderName: http2.ContentTypeTextPlain,
 		},
 	}
 
@@ -110,7 +110,7 @@ func TestRouter_Route_HandlerError(t *testing.T) {
 		StatusCode: http.StatusInternalServerError,
 		Body:       http.StatusText(http.StatusInternalServerError),
 		Headers: map[string]string{
-			api.ContentTypeHeaderName: api.ContentTypeTextPlain,
+			http2.ContentTypeHeaderName: http2.ContentTypeTextPlain,
 		},
 	}
 	response := routerAndMocks.router.Route(request)

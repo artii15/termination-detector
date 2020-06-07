@@ -3,7 +3,6 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/nordcloud/termination-detector/internal/api"
 	internalHTTP "github.com/nordcloud/termination-detector/pkg/http"
 	"github.com/nordcloud/termination-detector/pkg/task"
 	"github.com/sirupsen/logrus"
@@ -36,7 +35,7 @@ func (handler *PutTaskCompletionRequestHandler) HandleRequest(request internalHT
 		return internalHTTP.Response{
 			StatusCode: http.StatusBadRequest,
 			Body:       InvalidPayloadErrorMessage,
-			Headers:    map[string]string{api.ContentTypeHeaderName: api.ContentTypeTextPlain},
+			Headers:    map[string]string{internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeTextPlain},
 		}, nil
 	}
 	taskCompletionState, isTaskCompletionStateFound := completionStateToTaskStateMapping[completion.State]
@@ -45,7 +44,7 @@ func (handler *PutTaskCompletionRequestHandler) HandleRequest(request internalHT
 			StatusCode: http.StatusBadRequest,
 			Body:       UnknownCompletionStateMsg,
 			Headers: map[string]string{
-				api.ContentTypeHeaderName: api.ContentTypeTextPlain,
+				internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeTextPlain,
 			},
 		}, nil
 	}
@@ -72,7 +71,7 @@ func mapCompletingResultToResponse(request internalHTTP.Request, result task.Com
 			StatusCode: http.StatusConflict,
 			Body:       ConflictingTaskCompletionMsg,
 			Headers: map[string]string{
-				api.ContentTypeHeaderName: api.ContentTypeTextPlain,
+				internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeTextPlain,
 			},
 		}
 	case task.CompletingResultCompleted:
@@ -80,7 +79,7 @@ func mapCompletingResultToResponse(request internalHTTP.Request, result task.Com
 			StatusCode: http.StatusCreated,
 			Body:       request.Body,
 			Headers: map[string]string{
-				api.ContentTypeHeaderName: api.ContentTypeApplicationJSON,
+				internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeApplicationJSON,
 			},
 		}
 	default:
@@ -89,7 +88,7 @@ func mapCompletingResultToResponse(request internalHTTP.Request, result task.Com
 			StatusCode: http.StatusInternalServerError,
 			Body:       UnknownErrorMsg,
 			Headers: map[string]string{
-				api.ContentTypeHeaderName: api.ContentTypeTextPlain,
+				internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeTextPlain,
 			},
 		}
 	}
