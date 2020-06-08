@@ -1,16 +1,15 @@
-package api
+package http
 
 import (
 	"net/http"
 
-	internalHTTP "github.com/artii15/termination-detector/pkg/http"
 	log "github.com/sirupsen/logrus"
 )
 
-type RequestsHandlersMap map[internalHTTP.ResourcePath]map[internalHTTP.Method]RequestHandler
+type RequestsHandlersMap map[ResourcePath]map[Method]RequestHandler
 
 type RequestHandler interface {
-	HandleRequest(request internalHTTP.Request) (internalHTTP.Response, error)
+	HandleRequest(request Request) (Response, error)
 }
 
 type Router struct {
@@ -23,7 +22,7 @@ func NewRouter(requestsHandlers RequestsHandlersMap) *Router {
 	}
 }
 
-func (router *Router) Route(request internalHTTP.Request) internalHTTP.Response {
+func (router *Router) Route(request Request) Response {
 	methodsHandlers, handlersForResourceExist := router.requestsHandlers[request.ResourcePath]
 	if !handlersForResourceExist {
 		return CreateDefaultTextResponseWithStatus(http.StatusNotFound)
@@ -42,12 +41,12 @@ func (router *Router) Route(request internalHTTP.Request) internalHTTP.Response 
 	return response
 }
 
-func CreateDefaultTextResponseWithStatus(statusCode int) internalHTTP.Response {
-	return internalHTTP.Response{
+func CreateDefaultTextResponseWithStatus(statusCode int) Response {
+	return Response{
 		StatusCode: statusCode,
 		Body:       http.StatusText(statusCode),
 		Headers: map[string]string{
-			internalHTTP.ContentTypeHeaderName: internalHTTP.ContentTypeTextPlain,
+			ContentTypeHeaderName: ContentTypeTextPlain,
 		},
 	}
 }

@@ -3,7 +3,6 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/artii15/termination-detector/internal/api"
 	internalHTTP "github.com/artii15/termination-detector/pkg/http"
 	"github.com/artii15/termination-detector/pkg/process"
 )
@@ -24,7 +23,7 @@ func (handler *GetProcessRequestHandler) HandleRequest(request internalHTTP.Requ
 		return internalHTTP.Response{}, err
 	}
 	if foundProcess == nil {
-		return api.CreateDefaultTextResponseWithStatus(http.StatusNotFound), nil
+		return internalHTTP.CreateDefaultTextResponseWithStatus(http.StatusNotFound), nil
 	}
 
 	return internalHTTP.Response{

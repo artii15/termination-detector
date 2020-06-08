@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/artii15/termination-detector/internal/api"
 	"github.com/artii15/termination-detector/internal/api/handlers"
 	"github.com/artii15/termination-detector/internal/dates"
 	"github.com/artii15/termination-detector/internal/dynamo"
@@ -19,7 +18,7 @@ const (
 )
 
 type apiGatewayEventHandler struct {
-	router *api.Router
+	router *http.Router
 }
 
 func (handler *apiGatewayEventHandler) handle(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -61,7 +60,7 @@ func main() {
 	putTaskCompletionRequestHandler := handlers.NewPutTaskCompletionRequestHandler(taskCompleter)
 	processGetter := dynamo.NewProcessGetter(dynamoAPI, tasksTableName, currentDateGetter)
 	getProcessRequestHandler := handlers.NewGetProcessRequestHandler(processGetter)
-	router := api.NewRouter(map[http.ResourcePath]map[http.Method]api.RequestHandler{
+	router := http.NewRouter(map[http.ResourcePath]map[http.Method]http.RequestHandler{
 		http.ResourcePathTask: {
 			http.MethodPut: putTaskRequestHandler,
 		},

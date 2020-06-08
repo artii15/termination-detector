@@ -1,10 +1,9 @@
-package api_test
+package http_test
 
 import (
 	"net/http"
 	"testing"
 
-	"github.com/artii15/termination-detector/internal/api"
 	internalHTTP "github.com/artii15/termination-detector/pkg/http"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -16,7 +15,7 @@ type requestHandlerMock struct {
 }
 
 type routerWithMocks struct {
-	router         *api.Router
+	router         *internalHTTP.Router
 	getTaskHandler *requestHandlerMock
 }
 
@@ -27,12 +26,12 @@ func (handler *requestHandlerMock) HandleRequest(request internalHTTP.Request) (
 
 func newRouterWithMocks() routerWithMocks {
 	getTaskRequestHandler := new(requestHandlerMock)
-	requestsHandlers := api.RequestsHandlersMap{
+	requestsHandlers := internalHTTP.RequestsHandlersMap{
 		internalHTTP.ResourcePathTask: {
 			internalHTTP.MethodGet: getTaskRequestHandler,
 		},
 	}
-	router := api.NewRouter(requestsHandlers)
+	router := internalHTTP.NewRouter(requestsHandlers)
 
 	return routerWithMocks{
 		router:         router,
