@@ -1,4 +1,4 @@
-module github.com/nordcloud/termination-detector
+module github.com/artii15/termination-detector
 
 go 1.14
 

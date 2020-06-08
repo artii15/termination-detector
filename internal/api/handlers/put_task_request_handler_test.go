@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nordcloud/termination-detector/internal/api/handlers"
-	internalHTTP "github.com/nordcloud/termination-detector/pkg/http"
-	"github.com/nordcloud/termination-detector/pkg/task"
+	"github.com/artii15/termination-detector/internal/api/handlers"
+	internalHTTP "github.com/artii15/termination-detector/pkg/http"
+	"github.com/artii15/termination-detector/pkg/task"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

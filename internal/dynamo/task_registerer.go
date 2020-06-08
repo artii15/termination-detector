@@ -5,8 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/nordcloud/termination-detector/pkg/task"
-
+	"github.com/artii15/termination-detector/pkg/task"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/dynamodb"

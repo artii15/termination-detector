@@ -5,13 +5,11 @@ import (
 	"testing"
 	"time"
 
-	task2 "github.com/nordcloud/termination-detector/pkg/task"
-
+	"github.com/artii15/termination-detector/internal/dynamo"
+	"github.com/artii15/termination-detector/pkg/process"
+	"github.com/artii15/termination-detector/pkg/task"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/nordcloud/termination-detector/pkg/process"
-
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/nordcloud/termination-detector/internal/dynamo"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -121,7 +119,7 @@ func TestProcessGetter_Get_AbortedProcess(t *testing.T) {
 		Items: []map[string]*dynamodb.AttributeValue{
 			{
 				dynamo.ProcessIDAttrName:        {S: &procID},
-				dynamo.TaskStateAttrName:        {S: aws.String(string(task2.StateAborted))},
+				dynamo.TaskStateAttrName:        {S: aws.String(string(task.StateAborted))},
 				dynamo.TaskStateMessageAttrName: {S: &processFailureReason},
 			},
 		},
@@ -180,7 +178,7 @@ func TestProcessGetter_Get_UndefinedBadStateEnterTime(t *testing.T) {
 		Items: []map[string]*dynamodb.AttributeValue{
 			{
 				dynamo.ProcessIDAttrName: {S: &procID},
-				dynamo.TaskStateAttrName: {S: aws.String(string(task2.StateCreated))},
+				dynamo.TaskStateAttrName: {S: aws.String(string(task.StateCreated))},
 			},
 		},
 	}, nil)
@@ -208,7 +206,7 @@ func TestProcessGetter_Get_ProcessTimedOut(t *testing.T) {
 		Items: []map[string]*dynamodb.AttributeValue{
 			{
 				dynamo.ProcessIDAttrName:             {S: &procID},
-				dynamo.TaskStateAttrName:             {S: aws.String(string(task2.StateCreated))},
+				dynamo.TaskStateAttrName:             {S: aws.String(string(task.StateCreated))},
 				dynamo.TaskBadStateEnterTimeAttrName: {S: &taskBadStateEnterTimeString},
 			},
 		},
@@ -243,7 +241,7 @@ func TestProcessGetter_Get_ProcessIsWaiting(t *testing.T) {
 		Items: []map[string]*dynamodb.AttributeValue{
 			{
 				dynamo.ProcessIDAttrName:             {S: &procID},
-				dynamo.TaskStateAttrName:             {S: aws.String(string(task2.StateCreated))},
+				dynamo.TaskStateAttrName:             {S: aws.String(string(task.StateCreated))},
 				dynamo.TaskBadStateEnterTimeAttrName: {S: &taskBadStateEnterTimeString},
 			},
 		},

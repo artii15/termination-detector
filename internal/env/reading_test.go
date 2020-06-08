@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/nordcloud/termination-detector/internal/env"
+	"github.com/artii15/termination-detector/internal/env"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/nordcloud/termination-detector/pkg/process"
+	"github.com/artii15/termination-detector/pkg/process"
 )
 
 type ProcessGetter struct {

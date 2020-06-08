@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	internalHTTP "github.com/nordcloud/termination-detector/pkg/http"
+	internalHTTP "github.com/artii15/termination-detector/pkg/http"
 	log "github.com/sirupsen/logrus"
 )
 

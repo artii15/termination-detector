@@ -3,8 +3,8 @@ package handlers
 import (
 	"net/http"
 
-	internalHTTP "github.com/nordcloud/termination-detector/pkg/http"
-	"github.com/nordcloud/termination-detector/pkg/task"
+	internalHTTP "github.com/artii15/termination-detector/pkg/http"
+	"github.com/artii15/termination-detector/pkg/task"
 	"github.com/sirupsen/logrus"
 )
 

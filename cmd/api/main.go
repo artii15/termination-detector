@@ -1,16 +1,16 @@
 package main
 
 import (
+	"github.com/artii15/termination-detector/internal/api"
+	"github.com/artii15/termination-detector/internal/api/handlers"
+	"github.com/artii15/termination-detector/internal/dates"
+	"github.com/artii15/termination-detector/internal/dynamo"
+	"github.com/artii15/termination-detector/internal/env"
+	"github.com/artii15/termination-detector/pkg/http"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/nordcloud/termination-detector/internal/api"
-	"github.com/nordcloud/termination-detector/internal/api/handlers"
-	"github.com/nordcloud/termination-detector/internal/dates"
-	"github.com/nordcloud/termination-detector/internal/dynamo"
-	"github.com/nordcloud/termination-detector/internal/env"
-	"github.com/nordcloud/termination-detector/pkg/http"
 )
 
 const (

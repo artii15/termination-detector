@@ -5,11 +5,10 @@ import (
 	"net/http"
 	"testing"
 
+	internalHTTP "github.com/artii15/termination-detector/pkg/http"
+	"github.com/artii15/termination-detector/pkg/task"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/stretchr/testify/assert"
-
-	internalHTTP "github.com/nordcloud/termination-detector/pkg/http"
-	"github.com/nordcloud/termination-detector/pkg/task"
 )
 
 type taskCompleterWithMocks struct {

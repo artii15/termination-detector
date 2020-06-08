@@ -3,7 +3,7 @@ package http
 import (
 	"encoding/json"
 
-	"github.com/nordcloud/termination-detector/pkg/process"
+	"github.com/artii15/termination-detector/pkg/process"
 	"github.com/pkg/errors"
 )
 

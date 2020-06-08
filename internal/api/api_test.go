@@ -6,16 +6,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nordcloud/termination-detector/pkg/process"
-
-	"github.com/nordcloud/termination-detector/pkg/task"
-
+	"github.com/artii15/termination-detector/internal/dynamo"
+	"github.com/artii15/termination-detector/pkg/process"
+	"github.com/artii15/termination-detector/pkg/sdk"
+	"github.com/artii15/termination-detector/pkg/task"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/nordcloud/termination-detector/internal/dynamo"
-	"github.com/nordcloud/termination-detector/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 )
 

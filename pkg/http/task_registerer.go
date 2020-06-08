@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/nordcloud/termination-detector/pkg/task"
+	"github.com/artii15/termination-detector/pkg/task"
 )
 
 type TaskRegisterer struct {

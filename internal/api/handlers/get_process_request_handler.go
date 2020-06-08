@@ -3,9 +3,9 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/nordcloud/termination-detector/internal/api"
-	internalHTTP "github.com/nordcloud/termination-detector/pkg/http"
-	"github.com/nordcloud/termination-detector/pkg/process"
+	"github.com/artii15/termination-detector/internal/api"
+	internalHTTP "github.com/artii15/termination-detector/pkg/http"
+	"github.com/artii15/termination-detector/pkg/process"
 )
 
 type GetProcessRequestHandler struct {

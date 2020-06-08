@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	internalHTTP "github.com/nordcloud/termination-detector/pkg/http"
+	internalHTTP "github.com/artii15/termination-detector/pkg/http"
 )
 
 func InternalRequestToNative(baseURL string, request internalHTTP.Request) (*http.Request, error) {

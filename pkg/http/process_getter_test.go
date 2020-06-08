@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"testing"
 
+	internalHTTP "github.com/artii15/termination-detector/pkg/http"
+	"github.com/artii15/termination-detector/pkg/process"
 	"github.com/aws/aws-sdk-go/aws"
-	internalHTTP "github.com/nordcloud/termination-detector/pkg/http"
-	"github.com/nordcloud/termination-detector/pkg/process"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

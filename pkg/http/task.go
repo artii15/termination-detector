@@ -4,8 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/nordcloud/termination-detector/pkg/task"
-
+	"github.com/artii15/termination-detector/pkg/task"
 	"github.com/pkg/errors"
 )
 

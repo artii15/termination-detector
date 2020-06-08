@@ -4,12 +4,12 @@ import (
 	"net/http"
 	"time"
 
+	internalHTTP "github.com/artii15/termination-detector/pkg/http"
+	"github.com/artii15/termination-detector/pkg/http/client"
+	"github.com/artii15/termination-detector/pkg/process"
+	"github.com/artii15/termination-detector/pkg/task"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	v4 "github.com/aws/aws-sdk-go/aws/signer/v4"
-	internalHTTP "github.com/nordcloud/termination-detector/pkg/http"
-	"github.com/nordcloud/termination-detector/pkg/http/client"
-	"github.com/nordcloud/termination-detector/pkg/process"
-	"github.com/nordcloud/termination-detector/pkg/task"
 )
 
 type SDK struct {

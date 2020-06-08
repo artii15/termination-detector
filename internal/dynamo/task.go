@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	task2 "github.com/nordcloud/termination-detector/pkg/task"
-
+	"github.com/artii15/termination-detector/pkg/task"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 )
 
@@ -45,12 +44,12 @@ func readTaskBadStateEnterTime(dynamoTask map[string]*dynamodb.AttributeValue) (
 	return badStateEnterTime, nil
 }
 
-func readTaskState(dynamoTask map[string]*dynamodb.AttributeValue) (task2.State, error) {
+func readTaskState(dynamoTask map[string]*dynamodb.AttributeValue) (task.State, error) {
 	taskStateAttr, isTaskStateDefined := dynamoTask[TaskStateAttrName]
 	if !isTaskStateDefined || taskStateAttr.S == nil {
 		return "", fmt.Errorf("item does not contain task state attribute: %+v", dynamoTask)
 	}
-	return task2.State(*taskStateAttr.S), nil
+	return task.State(*taskStateAttr.S), nil
 }
 
 func readTaskStateMessage(dynamoTask map[string]*dynamodb.AttributeValue) *string {
