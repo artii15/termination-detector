@@ -1,7 +1,10 @@
 package client
 
 import (
+	"io"
 	"net/http"
+
+	"github.com/sirupsen/logrus"
 
 	internalHTTP "github.com/artii15/termination-detector/pkg/http"
 	"github.com/pkg/errors"
@@ -61,6 +64,7 @@ func (executor *Client) executeNativeRequest(request *http.Request) (internalHTT
 	if err != nil {
 		return internalHTTP.Response{}, errors.Wrapf(err, "failed to execute request: %+v", request)
 	}
+	defer closeResponseBody(response.Body)
 	responseBody, err := readResponseBody(response.Body)
 	if err != nil {
 		return internalHTTP.Response{}, errors.Wrapf(err, "failed to read response body: %+v", response)
@@ -70,4 +74,13 @@ func (executor *Client) executeNativeRequest(request *http.Request) (internalHTT
 		Body:       responseBody,
 		Headers:    readHeaders(response.Header),
 	}, nil
+}
+
+func closeResponseBody(responseBody io.Closer) {
+	if responseBody == nil {
+		return
+	}
+	if err := responseBody.Close(); err != nil {
+		logrus.WithError(err).Error("failed to close http response body")
+	}
 }
