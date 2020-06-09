@@ -160,25 +160,6 @@ func TestUsingAWSIAMAuthorizedSDK(t *testing.T) {
 		assert.Equal(t, process.StateError, proc.State)
 		assert.Equal(t, &failureReason, proc.StateMessage)
 	})
-
-	task4ID := "4"
-	t.Run("process fails if task times out", func(t *testing.T) {
-		registrationStatus, err := terminationDetectorSDK.Register(task.RegistrationData{
-			ID: task.ID{
-				ProcessID: testProcessID,
-				TaskID:    task4ID,
-			},
-			ExpirationTime: time.Now().Add(-time.Hour * 24),
-		})
-		assert.NoError(t, err)
-		assert.Equal(t, task.RegistrationResultCreated, registrationStatus)
-
-		proc, err := terminationDetectorSDK.Get(testProcessID)
-		assert.NoError(t, err)
-		assert.NotNil(t, proc)
-		assert.Equal(t, process.StateError, proc.State)
-		assert.NotEmpty(t, proc.StateMessage)
-	})
 }
 
 func removeTestDataFromDB(t *testing.T, awsSess *session.Session, tasksTableName string) {
