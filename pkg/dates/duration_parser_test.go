@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/artii15/termination-detector/internal/dates"
+	"github.com/artii15/termination-detector/pkg/dates"
 	"github.com/stretchr/testify/assert"
 )
 

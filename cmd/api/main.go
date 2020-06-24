@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/artii15/termination-detector/internal/api/handlers"
-	"github.com/artii15/termination-detector/internal/dates"
 	"github.com/artii15/termination-detector/internal/dynamo"
 	"github.com/artii15/termination-detector/internal/env"
+	"github.com/artii15/termination-detector/pkg/dates"
 	"github.com/artii15/termination-detector/pkg/http"
 	lambdaHandlers "github.com/artii15/termination-detector/pkg/lambda"
 	"github.com/aws/aws-lambda-go/lambda"
