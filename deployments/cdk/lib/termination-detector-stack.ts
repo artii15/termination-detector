@@ -3,6 +3,9 @@ import * as apiGW from '@aws-cdk/aws-apigateway';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as path from "path";
 import * as dynamo from '@aws-cdk/aws-dynamodb';
+import * as ssm from '@aws-cdk/aws-ssm';
+
+const apiURLSSMParameterName = '/termination-detector/api-url';
 
 export class TerminationDetectorStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -48,6 +51,11 @@ export class TerminationDetectorStack extends cdk.Stack {
     const taskCompletion = task.addResource('completion');
     taskCompletion.addMethod('PUT', apiLambdaIntegration, {
       authorizationType: apiGW.AuthorizationType.IAM
+    });
+
+    new ssm.StringParameter(this, 'apiURL', {
+      parameterName: apiURLSSMParameterName,
+      stringValue: api.url,
     });
   }
 }
